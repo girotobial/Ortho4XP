@@ -7,13 +7,9 @@ from tkinter import RIDGE, E, N, S, W, filedialog
 import airport_data as APT_SRC
 import O4_DEM_Utils as DEM
 import O4_File_Names as FNAMES
-import O4_Imagery_Utils as IMG
 import O4_OSM_Utils as OSM
-import O4_Overlay_Utils as OVL
-import O4_Tile_Utils as TILE
 import O4_UI_Utils as UI
-import O4_Vector_Map as VMAP
-from O4_Common_Types import CoverZLConfig, DecalConfig, ScreenRes
+from common import CoverZLConfig, DecalConfig, ScreenRes
 
 cfg_vars = {
     # App
@@ -508,11 +504,7 @@ class Tile:
         self.lat = lat
         self.lon = lon
         self.custom_build_dir = custom_build_dir
-        self.grouped = (
-            True
-            if (custom_build_dir and custom_build_dir[-1] != "/")
-            else False
-        )
+        self.grouped = bool((custom_build_dir and custom_build_dir[-1] != "/"))
         self.build_dir = FNAMES.build_dir(lat, lon, custom_build_dir)
         self.dem = None
         for var in list_tile_vars:
