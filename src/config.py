@@ -6,7 +6,7 @@ from tkinter import RIDGE, E, N, S, W, filedialog
 
 from . import airport_data as APT_SRC
 from . import O4_DEM_Utils as DEM
-from . import O4_File_Names as FNAMES
+from . import filenames as FNAMES
 from . import O4_Imagery_Utils as IMG
 from . import O4_OSM_Utils as OSM
 from . import O4_UI_Utils as UI

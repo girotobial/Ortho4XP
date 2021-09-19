@@ -8,7 +8,7 @@ import numpy
 import requests
 from shapely import geometry, ops
 
-import src.O4_File_Names as FNAMES
+import src.filenames as FNAMES
 import src.O4_UI_Utils as UI
 
 overpass_servers = {

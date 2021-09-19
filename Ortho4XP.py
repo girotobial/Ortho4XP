@@ -3,7 +3,7 @@ import os
 import sys
 
 import src.airport_data as APT_SRC
-import src.O4_File_Names as FNAMES
+import src.filenames as FNAMES
 import src.O4_GUI_Utils as GUI
 import src.O4_Imagery_Utils as IMG
 import src.O4_Mask_Utils as MASK

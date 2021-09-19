@@ -8,7 +8,7 @@ import numpy
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 from . import O4_DEM_Utils as DEM
-from . import O4_File_Names as FNAMES
+from . import filenames as FNAMES
 from . import O4_Geo_Utils as GEO
 from . import O4_Imagery_Utils as IMG
 from . import O4_Mesh_Utils as MESH

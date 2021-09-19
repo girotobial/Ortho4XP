@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 
-from . import O4_File_Names as FNAMES
+from . import filenames as FNAMES
 from . import O4_UI_Utils as UI
 
 # the following is meant to be modified directly by users who need it (in the config window, not here!)

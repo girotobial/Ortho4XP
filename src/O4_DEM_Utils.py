@@ -17,7 +17,7 @@ except ImportError:
     has_gdal = False
 from PIL import Image
 
-import src.O4_File_Names as FNAMES
+import src.filenames as FNAMES
 import src.O4_UI_Utils as UI
 
 available_sources = (
