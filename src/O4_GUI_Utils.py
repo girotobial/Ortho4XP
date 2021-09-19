@@ -34,7 +34,7 @@ from PIL import Image, ImageDraw, ImageTk
 
 from . import airport_data as APT_SRC
 from . import common
-from . import O4_Config_Utils as CFG
+from . import config as CFG
 from . import O4_DSF_Utils as DSF
 from . import O4_File_Names as FNAMES
 from . import O4_Geo_Utils as GEO

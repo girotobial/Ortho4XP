@@ -14,7 +14,7 @@ import shapely.geometry
 import shapely.ops
 import shapely.prepared
 
-from . import O4_Config_Utils as CFG
+from . import config as CFG
 from . import O4_File_Names as FNAMES
 from . import O4_Geo_Utils as GEO
 from .common import IcaoCode

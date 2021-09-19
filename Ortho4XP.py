@@ -10,7 +10,7 @@ import src.O4_Mask_Utils as MASK
 import src.O4_Mesh_Utils as MESH
 import src.O4_Tile_Utils as TILE
 import src.O4_Vector_Map as VMAP
-import src.O4_Config_Utils as CFG  # CFG imported last because it can modify other modules variables
+import src.config as CFG  # CFG imported last because it can modify other modules variables
 
 Ortho4XP_dir = os.pardir if getattr(sys, "frozen", False) else os.curdir
 
