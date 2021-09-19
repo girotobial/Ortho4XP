@@ -17,7 +17,7 @@ import shapely.prepared
 import O4_Config_Utils as CFG
 import O4_File_Names as FNAMES
 import O4_Geo_Utils as GEO
-from O4_Common_Types import IcaoCode
+from common import IcaoCode
 
 ########################################################################################################################
 #
