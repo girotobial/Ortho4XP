@@ -10,7 +10,7 @@ sys.path.extend(
     ]
 )
 
-import O4_Airport_Data_Source as APT_SRC
+import airport_data as APT_SRC
 import O4_File_Names as FNAMES
 
 sys.path.append(FNAMES.Provider_dir)
