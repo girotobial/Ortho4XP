@@ -1,7 +1,6 @@
 import array
 import datetime
 import hashlib
-import math
 import os
 import pickle
 import re
@@ -12,13 +11,9 @@ from collections import defaultdict
 from math import ceil, floor
 
 import numpy
-import shapely.geometry
-import shapely.prepared
 from PIL import Image, ImageDraw
 
 import airport_data as APT_SRC
-import O4_Common_Types
-import O4_Config_Utils as CFG
 import O4_File_Names as FNAMES
 import O4_Geo_Utils as GEO
 import O4_Mask_Utils as MASK
