@@ -32,20 +32,20 @@ from tkinter import (
 
 from PIL import Image, ImageDraw, ImageTk
 
-import airport_data as APT_SRC
-import common
-import O4_Config_Utils as CFG
-import O4_DSF_Utils as DSF
-import O4_File_Names as FNAMES
-import O4_Geo_Utils as GEO
-import O4_Imagery_Utils as IMG
-import O4_Mask_Utils as MASK
-import O4_Mesh_Utils as MESH
-import O4_Tile_Utils as TILE
-import O4_UI_Utils as UI
-import O4_Vector_Map as VMAP
-import O4_Vector_Utils as VECT
-import O4_Version
+from . import airport_data as APT_SRC
+from . import common
+from . import O4_Config_Utils as CFG
+from . import O4_DSF_Utils as DSF
+from . import O4_File_Names as FNAMES
+from . import O4_Geo_Utils as GEO
+from . import O4_Imagery_Utils as IMG
+from . import O4_Mask_Utils as MASK
+from . import O4_Mesh_Utils as MESH
+from . import O4_Tile_Utils as TILE
+from . import O4_UI_Utils as UI
+from . import O4_Vector_Map as VMAP
+from . import O4_Vector_Utils as VECT
+from . import O4_Version
 
 # Set OsX=True if you prefer the OsX way of drawing existing tiles but are on Linux or Windows.
 OsX = "dar" in sys.platform

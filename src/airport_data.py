@@ -14,10 +14,10 @@ import shapely.geometry
 import shapely.ops
 import shapely.prepared
 
-import O4_Config_Utils as CFG
-import O4_File_Names as FNAMES
-import O4_Geo_Utils as GEO
-from common import IcaoCode
+from . import O4_Config_Utils as CFG
+from . import O4_File_Names as FNAMES
+from . import O4_Geo_Utils as GEO
+from .common import IcaoCode
 
 ########################################################################################################################
 #

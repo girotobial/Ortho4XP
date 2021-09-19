@@ -6,12 +6,12 @@ from PIL import Image, ImageDraw
 from rtree import index
 from shapely import affinity, geometry, ops
 
-import O4_DEM_Utils as DEM
-import O4_File_Names as FNAMES
-import O4_Geo_Utils as GEO
-import O4_UI_Utils as UI
-import O4_Vector_Utils as VECT
-from O4_OSM_Utils import OSM_layer
+from . import O4_DEM_Utils as DEM
+from . import O4_File_Names as FNAMES
+from . import O4_Geo_Utils as GEO
+from . import O4_UI_Utils as UI
+from . import O4_Vector_Utils as VECT
+from .O4_OSM_Utils import OSM_layer
 
 runway_chunks = 100  # how much chunks to split a runway longitudinally, ...
 chunk_min_size = (

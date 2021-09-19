@@ -2,25 +2,17 @@
 import os
 import sys
 
+import src.airport_data as APT_SRC
+import src.O4_File_Names as FNAMES
+import src.O4_GUI_Utils as GUI
+import src.O4_Imagery_Utils as IMG
+import src.O4_Mask_Utils as MASK
+import src.O4_Mesh_Utils as MESH
+import src.O4_Tile_Utils as TILE
+import src.O4_Vector_Map as VMAP
+import src.O4_Config_Utils as CFG  # CFG imported last because it can modify other modules variables
+
 Ortho4XP_dir = os.pardir if getattr(sys, "frozen", False) else os.curdir
-sys.path.extend(
-    [
-        os.path.join(Ortho4XP_dir, "src"),
-        os.path.join(Ortho4XP_dir, "Providers"),
-    ]
-)
-
-import airport_data as APT_SRC
-import O4_File_Names as FNAMES
-
-sys.path.append(FNAMES.Provider_dir)
-import O4_Config_Utils as CFG  # CFG imported last because it can modify other modules variables
-import O4_GUI_Utils as GUI
-import O4_Imagery_Utils as IMG
-import O4_Mask_Utils as MASK
-import O4_Mesh_Utils as MESH
-import O4_Tile_Utils as TILE
-import O4_Vector_Map as VMAP
 
 cmd_line = "USAGE: Ortho4XP.py lat lon imagery zl (won't read a tile config)\n   OR:  Ortho4XP.py lat lon (with existing tile config file)"
 

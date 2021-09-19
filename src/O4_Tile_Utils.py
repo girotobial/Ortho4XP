@@ -4,15 +4,15 @@ import shutil
 import threading
 import time
 
-import O4_DSF_Utils as DSF
-import O4_File_Names as FNAMES
-import O4_Imagery_Utils as IMG
-import O4_Mask_Utils as MASK
-import O4_Mesh_Utils as MESH
-import O4_Overlay_Utils as OVL
-import O4_UI_Utils as UI
-import O4_Vector_Map as VMAP
-from O4_Parallel_Utils import parallel_join, parallel_launch
+from . import O4_DSF_Utils as DSF
+from . import O4_File_Names as FNAMES
+from . import O4_Imagery_Utils as IMG
+from . import O4_Mask_Utils as MASK
+from . import O4_Mesh_Utils as MESH
+from . import O4_Overlay_Utils as OVL
+from . import O4_UI_Utils as UI
+from . import O4_Vector_Map as VMAP
+from .O4_Parallel_Utils import parallel_join, parallel_launch
 
 max_convert_slots = 4
 skip_downloads = False

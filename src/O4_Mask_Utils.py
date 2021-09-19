@@ -7,15 +7,15 @@ from math import atan, ceil, floor
 import numpy
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
-import O4_DEM_Utils as DEM
-import O4_File_Names as FNAMES
-import O4_Geo_Utils as GEO
-import O4_Imagery_Utils as IMG
-import O4_Mesh_Utils as MESH
-import O4_OSM_Utils as OSM
-import O4_UI_Utils as UI
-import O4_Vector_Utils as VECT
-from O4_Parallel_Utils import parallel_execute
+from . import O4_DEM_Utils as DEM
+from . import O4_File_Names as FNAMES
+from . import O4_Geo_Utils as GEO
+from . import O4_Imagery_Utils as IMG
+from . import O4_Mesh_Utils as MESH
+from . import O4_OSM_Utils as OSM
+from . import O4_UI_Utils as UI
+from . import O4_Vector_Utils as VECT
+from .O4_Parallel_Utils import parallel_execute
 
 mask_altitude_above = 0.5
 masks_build_slots = 4

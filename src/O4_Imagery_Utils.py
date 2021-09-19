@@ -12,9 +12,9 @@ import requests
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 Image.MAX_IMAGE_PIXELS = 1000000000  # Not a decompression bomb attack!
-import O4_File_Names as FNAMES
-import O4_Geo_Utils as GEO
-import O4_UI_Utils as UI
+from . import O4_File_Names as FNAMES
+from . import O4_Geo_Utils as GEO
+from . import O4_UI_Utils as UI
 
 try:
     import O4_Custom_URL as URL
@@ -32,11 +32,11 @@ except:
             "ERROR: Providers/O4_Custom_URL.py contains invalid code. The corresponding providers won't probably work."
         )
         has_URL = False
-import O4_Mask_Utils as MASK
-import O4_Mesh_Utils as MESH
-import O4_OSM_Utils as OSM
-import O4_Vector_Utils as VECT
-from O4_Parallel_Utils import parallel_execute
+from . import O4_Mask_Utils as MASK
+from . import O4_Mesh_Utils as MESH
+from . import O4_OSM_Utils as OSM
+from . import O4_Vector_Utils as VECT
+from .O4_Parallel_Utils import parallel_execute
 
 http_timeout = 10
 check_tms_response = False

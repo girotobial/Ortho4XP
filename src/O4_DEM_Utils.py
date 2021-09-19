@@ -10,15 +10,15 @@ import numpy
 import requests
 
 try:
-    import gdal
+    import osgeo.gdal as gdal
 
     has_gdal = True
-except:
+except ImportError:
     has_gdal = False
 from PIL import Image
 
-import O4_File_Names as FNAMES
-import O4_UI_Utils as UI
+import src.O4_File_Names as FNAMES
+import src.O4_UI_Utils as UI
 
 available_sources = (
     "View",
