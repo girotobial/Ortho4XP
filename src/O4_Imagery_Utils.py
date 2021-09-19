@@ -13,7 +13,7 @@ from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 Image.MAX_IMAGE_PIXELS = 1000000000  # Not a decompression bomb attack!
 from . import filenames as FNAMES
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from . import O4_UI_Utils as UI
 
 try:

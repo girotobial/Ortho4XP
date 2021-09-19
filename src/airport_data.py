@@ -16,7 +16,7 @@ import shapely.prepared
 
 from . import config as CFG
 from . import filenames as FNAMES
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from .common import IcaoCode
 
 ########################################################################################################################
@@ -309,7 +309,7 @@ class XPlaneTile:
 class GTile:
     """Utility class to work with Google's zoomlevel-dependent tiles.
     See also :
-    - O4_Geo_Utils.py
+    - geo.py
     - https://developers.google.com/maps/documentation/javascript/coordinates"""
 
     # We won't dynamically add any attribute : optimize RAM usage

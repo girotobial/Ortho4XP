@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw
 
 from . import airport_data as APT_SRC
 from . import filenames as FNAMES
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from . import O4_Mask_Utils as MASK
 from . import O4_UI_Utils as UI
 

@@ -4,7 +4,7 @@ import numpy
 from rtree import index
 from shapely import affinity, geometry, ops
 
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from . import O4_UI_Utils as UI
 
 # Some functions further down rely not only on a vector structure but also on a

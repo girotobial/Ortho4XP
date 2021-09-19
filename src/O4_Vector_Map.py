@@ -10,7 +10,7 @@ from . import airport as APT
 # from PIL import Image, ImageDraw, ImageFilter
 from . import O4_DEM_Utils as DEM
 from . import filenames as FNAMES
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from . import O4_OSM_Utils as OSM
 from . import O4_UI_Utils as UI
 from . import O4_Vector_Utils as VECT

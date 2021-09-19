@@ -37,7 +37,7 @@ from . import common
 from . import config as CFG
 from . import O4_DSF_Utils as DSF
 from . import filenames as FNAMES
-from . import O4_Geo_Utils as GEO
+from . import geo as GEO
 from . import O4_Imagery_Utils as IMG
 from . import O4_Mask_Utils as MASK
 from . import O4_Mesh_Utils as MESH
