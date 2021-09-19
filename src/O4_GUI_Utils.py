@@ -45,7 +45,7 @@ from . import O4_Tile_Utils as TILE
 from . import O4_UI_Utils as UI
 from . import O4_Vector_Map as VMAP
 from . import O4_Vector_Utils as VECT
-from . import O4_Version
+from . import version
 
 # Set OsX=True if you prefer the OsX way of drawing existing tiles but are on Linux or Windows.
 OsX = "dar" in sys.platform
@@ -113,7 +113,7 @@ class Ortho4XP_GUI(tk.Tk):
         self.rowconfigure(1, weight=1)
 
         # Resources
-        self.title("Ortho4XP " + O4_Version.version)
+        self.title("Ortho4XP " + version.version)
         self.folder_icon = tk.PhotoImage(
             file=os.path.join(FNAMES.Utils_dir, "Folder.gif")
         )
