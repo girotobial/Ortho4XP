@@ -16,7 +16,7 @@ import shapely.geometry
 import shapely.prepared
 from PIL import Image, ImageDraw
 
-import O4_Airport_Data_Source as APT_SRC
+import airport_data as APT_SRC
 import O4_Common_Types
 import O4_Config_Utils as CFG
 import O4_File_Names as FNAMES

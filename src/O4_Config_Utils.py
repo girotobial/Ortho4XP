@@ -4,7 +4,7 @@ import tkinter.ttk as ttk
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
 
-import O4_Airport_Data_Source as APT_SRC
+import airport_data as APT_SRC
 import O4_DEM_Utils as DEM
 import O4_File_Names as FNAMES
 import O4_Imagery_Utils as IMG
