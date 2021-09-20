@@ -34,3 +34,4 @@ virtualenv/
 **/*.orig
 **/Thumbs.db
 tmp/
+.vscode/
