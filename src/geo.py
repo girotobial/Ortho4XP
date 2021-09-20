@@ -3,17 +3,60 @@ from math import atan, atan2, cos, exp, floor, log, log2, pi, sin, sqrt, tan
 
 import pyproj
 
-earth_radius = 6378137
-lat_to_m = pi * earth_radius / 180
-m_to_lat = 1 / lat_to_m
+EARTH_RADIUS = 6378137
+EARTH_CIRCUMFRENCE = 2 * EARTH_RADIUS * pi
+METERS_PER_DEGREE_LATITUDE = EARTH_CIRCUMFRENCE / 360
+DEGREES_LATITUDE_PER_METER = 1 / METERS_PER_DEGREE_LATITUDE
 
 
-def lon_to_m(lat):
-    return lat_to_m * cos(pi * lat / 180)
+def radians(degrees: float) -> float:
+    """Converts angles in degrees to radians
+
+    Parameters
+    ----------
+    degrees : float
+        An angle measured in degrees
+
+    Returns
+    -------
+    float
+        Equivilant angle in radians
+    """
+    return degrees * pi / 180
 
 
-def m_to_lon(lat):
-    return m_to_lat / cos(pi * lat / 180)
+def meters_per_degree_longitude(lattitude: float) -> float:
+    """The number of meters in one degree of longitude at a given lattitude
+
+    Parameters
+    ----------
+    lattitude : float
+        The lattitude at which to measure one degree of longitude
+
+    Returns
+    -------
+    float
+        Length of one degree of longitude in meters.
+    """
+    return round(METERS_PER_DEGREE_LATITUDE * cos(radians(lattitude)), 10)
+
+
+def degrees_longitude_per_meter(lattitude: float) -> float:
+    """The number of degrees of longitude that is equivilant to one meter
+
+    Parameters
+    ----------
+    lattitude : float
+        The lattitude at which to convert one meter into degrees of longitude
+
+    Returns
+    -------
+    float
+        One meter in degrees of longitude.
+    """
+    if lattitude == 90:
+        return float("inf")
+    return DEGREES_LATITUDE_PER_METER / cos(radians(lattitude))
 
 
 def dist(A, B):
@@ -25,7 +68,7 @@ def dist(A, B):
         * cos(B[1] * pi / 180)
         * sin((A[0] - B[0]) * pi / 360) ** 2
     )
-    return 2 * earth_radius * atan2(sqrt(a), sqrt(1 - a))
+    return 2 * EARTH_RADIUS * atan2(sqrt(a), sqrt(1 - a))
 
 
 epsg = {}
@@ -35,12 +78,12 @@ epsg["3857"] = pyproj.Proj(init="epsg:3857")
 
 ##############################################################################
 def webmercator_pixel_size(lat, zoomlevel):
-    return 2 * pi * earth_radius * cos(pi * lat / 180) / (2 ** (zoomlevel + 8))
+    return EARTH_CIRCUMFRENCE * cos(pi * lat / 180) / (2 ** (zoomlevel + 8))
 
 
 def webmercator_zoomlevel(lat, pixel_size):
     return floor(
-        log2((2 * pi * earth_radius * cos(lat * pi / 180)) / pixel_size) - 8
+        log2((EARTH_CIRCUMFRENCE * cos(lat * pi / 180)) / pixel_size) - 8
     )
 
 

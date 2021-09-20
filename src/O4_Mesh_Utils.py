@@ -156,8 +156,12 @@ def build_curv_tol_weight_map(tile, weight_array):
             (xmin, ymin, xmax, ymax) = dico_airports[airport][
                 "boundary"
             ].bounds
-            x_shift = 1000 * tile.apt_curv_ext * GEO.m_to_lon(tile.lat)
-            y_shift = 1000 * tile.apt_curv_ext * GEO.m_to_lat
+            x_shift = (
+                1000
+                * tile.apt_curv_ext
+                * GEO.degrees_longitude_per_meter(tile.lat)
+            )
+            y_shift = 1000 * tile.apt_curv_ext * GEO.DEGREES_LATITUDE_PER_METER
             colmin = max(round((xmin - x_shift) * 1000), 0)
             colmax = min(round((xmax + x_shift) * 1000), 1000)
             rowmax = min(round(((1 - ymin) + y_shift) * 1000), 1000)
@@ -212,7 +216,11 @@ def build_curv_tol_weight_map(tile, weight_array):
                 or latp > tile.lat + 1
             ):
                 continue
-            x_shift = 1000 * tile.coast_curv_ext * GEO.m_to_lon(tile.lat)
+            x_shift = (
+                1000
+                * tile.coast_curv_ext
+                * GEO.degrees_longitude_per_meter(tile.lat)
+            )
             y_shift = tile.coast_curv_ext / (111.12)
             colmin = max(round((lonp - tile.lon - x_shift) * 1000), 0)
             colmax = min(round((lonp - tile.lon + x_shift) * 1000), 1000)
@@ -665,13 +673,16 @@ def build_mesh(tile):
     )
     hmin_effective = max(
         tile.hmin,
-        (tile.dem.y1 - tile.dem.y0) * GEO.lat_to_m / tile.dem.nydem / 2,
+        (tile.dem.y1 - tile.dem.y0)
+        * GEO.METERS_PER_DEGREE_LATITUDE
+        / tile.dem.nydem
+        / 2,
     )
     mesh_cmd = [
         Triangle4XP_cmd.strip(),
         Tri_option.strip(),
-        "{:.9g}".format(GEO.lon_to_m(tile.lat)),
-        "{:.9g}".format(GEO.lat_to_m),
+        "{:.9g}".format(GEO.meters_per_degree_longitude(tile.lat)),
+        "{:.9g}".format(GEO.METERS_PER_DEGREE_LATITUDE),
         "{:n}".format(tile.dem.nxdem),
         "{:n}".format(tile.dem.nydem),
         "{:.9g}".format(tile.dem.x0),

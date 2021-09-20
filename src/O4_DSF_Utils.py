@@ -163,10 +163,18 @@ def zone_list_to_ortho_dico(tile):
                 "boundary"
             ].bounds
             # extension
-            xmin -= 1000 * tile.cover_extent * GEO.m_to_lon(tile.lat)
-            xmax += 1000 * tile.cover_extent * GEO.m_to_lon(tile.lat)
-            ymax += 1000 * tile.cover_extent * GEO.m_to_lat
-            ymin -= 1000 * tile.cover_extent * GEO.m_to_lat
+            xmin -= (
+                1000
+                * tile.cover_extent
+                * GEO.degrees_longitude_per_meter(tile.lat)
+            )
+            xmax += (
+                1000
+                * tile.cover_extent
+                * GEO.degrees_longitude_per_meter(tile.lat)
+            )
+            ymax += 1000 * tile.cover_extent * GEO.DEGREES_LATITUDE_PER_METER
+            ymin -= 1000 * tile.cover_extent * GEO.DEGREES_LATITUDE_PER_METER
             # round off to texture boundaries at tile.cover_zl zoomlevel
             (til_x_left, til_y_top) = GEO.wgs84_to_orthogrid(
                 ymax + tile.lat, xmin + tile.lon, tile.cover_zl.default

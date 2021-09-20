@@ -959,10 +959,13 @@ def length_in_meters(way_or_geometry):
             affinity.scale(
                 geometry.LineString(way_or_geometry), scalx, 1
             ).length
-            * GEO.lat_to_m
+            * GEO.METERS_PER_DEGREE_LATITUDE
         )
     else:
-        return affinity.scale(way_or_geometry, scalx, 1).length * GEO.lat_to_m
+        return (
+            affinity.scale(way_or_geometry, scalx, 1).length
+            * GEO.METERS_PER_DEGREE_LATITUDE
+        )
 
 
 ##############################################################################
@@ -979,9 +982,9 @@ def improved_buffer(
     simplify_length,
     show_progress=False,
 ):
-    buffer_width *= GEO.m_to_lat
-    separation_width *= GEO.m_to_lat
-    simplify_length *= GEO.m_to_lat
+    buffer_width *= GEO.DEGREES_LATITUDE_PER_METER
+    separation_width *= GEO.DEGREES_LATITUDE_PER_METER
+    simplify_length *= GEO.DEGREES_LATITUDE_PER_METER
     if show_progress:
         UI.progress_bar(1, 0)
     input_geometry = affinity.affine_transform(
@@ -1052,14 +1055,16 @@ def weighted_normals(way, side="left"):  # normalized in the given metric
 
 ##############################################################################
 def shift_way(way, shift, side="left"):  # shift in m
-    return way + shift * GEO.m_to_lat * weighted_normals(way, side)
+    return way + shift * GEO.DEGREES_LATITUDE_PER_METER * weighted_normals(
+        way, side
+    )
 
 
 ##############################################################################
 
 ##############################################################################
 def buffer_simple_way(way, width):  # width assumed in meter
-    width *= GEO.m_to_lat
+    width *= GEO.DEGREES_LATITUDE_PER_METER
     way_normals = weighted_normals(way, "left")
     return numpy.concatenate(
         (
@@ -1083,7 +1088,7 @@ def refine_way(way, max_length):  # max_length assumed in meter
                     (way[i] - way[i + 1]) ** 2 * numpy.array([[scalx ** 2, 1]])
                 )
             )
-            * GEO.lat_to_m
+            * GEO.METERS_PER_DEGREE_LATITUDE
             // max_length
         )
         new_way.extend(
@@ -1118,7 +1123,7 @@ def point_to_segment_distance(way, A, B):
     # tmp = numpy.maximum(numpy.minimum(0,projcoords(way,A,B)),1)
     # tmp = way - (A+numpy.outer(tmp,(B-A))
     # tmp = numpy.sum(tmp**2*numpy.array([scalx**2,1]),axis=1)
-    # return numpy.sqrt(tmp)*GEO.lat_to_m
+    # return numpy.sqrt(tmp)*GEO.METERS_PER_DEGREE_LATITUDE
     # In short :
     return (
         numpy.sqrt(
@@ -1140,7 +1145,7 @@ def point_to_segment_distance(way, A, B):
                 axis=1,
             )
         )
-        * GEO.lat_to_m
+        * GEO.METERS_PER_DEGREE_LATITUDE
     )
 
 
@@ -1204,7 +1209,7 @@ def weighted_alt(node, alt_idx, alt_dico, dem):
     pt = geometry.Point((x, y))
     for idx in alt_idx.intersection((x - eps1, y - eps1, x + eps1, y + eps1)):
         (linestring, leastsquarefit, width) = alt_dico[idx]
-        dist = pt.distance(linestring) * GEO.lat_to_m
+        dist = pt.distance(linestring) * GEO.METERS_PER_DEGREE_LATITUDE
         weight = numpy.exp(-dist / (2 * width))
         alti += (
             numpy.polyval(

@@ -459,14 +459,22 @@ def include_sea(vector_map, tile):
 ##############################################################################
 def include_water(vector_map, tile):
     large_lake_threshold = (
-        tile.max_area * 1e6 / (GEO.lat_to_m * GEO.lon_to_m(tile.lat + 0.5))
+        tile.max_area
+        * 1e6
+        / (
+            GEO.METERS_PER_DEGREE_LATITUDE
+            * GEO.meters_per_degree_longitude(tile.lat + 0.5)
+        )
     )
 
     def filter_large_lakes(pol, osmid, dicosmtags):
         if pol.area < large_lake_threshold:
             return False
         area = int(
-            pol.area * GEO.lat_to_m * GEO.lon_to_m(tile.lat + 0.5) / 1e6
+            pol.area
+            * GEO.METERS_PER_DEGREE_LATITUDE
+            * GEO.meters_per_degree_longitude(tile.lat + 0.5)
+            / 1e6
         )
         if (osmid in dicosmtags) and ("name" in dicosmtags[osmid]):
             if dicosmtags[osmid]["name"] in good_imagery_list:
@@ -569,7 +577,8 @@ def include_water(vector_map, tile):
             tile.dem.alt_vec,
             "WATER",
             area_limit=tile.min_area / 10000,
-            simplify=tile.water_simplification * GEO.m_to_lat,
+            simplify=tile.water_simplification
+            * GEO.DEGREES_LATITUDE_PER_METER,
             check=True,
         )
     if not sea_equiv_area.is_empty:
@@ -591,7 +600,8 @@ def include_water(vector_map, tile):
             tile.dem.alt_vec,
             "SEA_EQUIV",
             area_limit=tile.min_area / 10000,
-            simplify=tile.water_simplification * GEO.m_to_lat,
+            simplify=tile.water_simplification
+            * GEO.DEGREES_LATITUDE_PER_METER,
             check=True,
         )
     return 1
@@ -892,7 +902,7 @@ def keep_obj8(
     idx_node = 0
     dico_index = {}
     index = 0
-    latscale = GEO.m_to_lat
+    latscale = GEO.DEGREES_LATITUDE_PER_METER
     lonscale = latscale / cos(lat_anchor * pi / 180)
     f = open(objfile_name, "r")
     for line in f.readlines():

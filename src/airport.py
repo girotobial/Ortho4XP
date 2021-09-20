@@ -680,13 +680,17 @@ def discard_unwanted_airports(tile, dico_airports):
         apt = dico_airports[airport]
         # if apt['key_type'] in ('icao','iata','local_ref'): continue
         if apt["boundary"]:
-            if apt["boundary"].area < 5000 * GEO.m_to_lat * GEO.m_to_lon(
+            if apt[
+                "boundary"
+            ].area < 5000 * GEO.DEGREES_LATITUDE_PER_METER * GEO.degrees_longitude_per_meter(
                 tile.lat
             ):
                 # too small, skip it
                 dico_airports.pop(airport, None)
             continue
-        if apt["runway"][0].area < 2500 * GEO.m_to_lat * GEO.m_to_lon(
+        if apt["runway"][
+            0
+        ].area < 2500 * GEO.DEGREES_LATITUDE_PER_METER * GEO.degrees_longitude_per_meter(
             tile.lat
         ):
             # too small, skip it
@@ -937,8 +941,8 @@ def build_airport_array(tile, dico_airports):
     airport_array = numpy.zeros((1001, 1001), dtype=numpy.bool)
     for airport in dico_airports:
         (xmin, ymin, xmax, ymax) = dico_airports[airport]["boundary"].bounds
-        x_shift = 1500 * GEO.m_to_lon(tile.lat)
-        y_shift = 1500 * GEO.m_to_lat
+        x_shift = 1500 * GEO.degrees_longitude_per_meter(tile.lat)
+        y_shift = 1500 * GEO.DEGREES_LATITUDE_PER_METER
         colmin = max(round((xmin - x_shift) * 1000), 0)
         colmax = min(round((xmax + x_shift) * 1000), 1000)
         rowmax = min(round(((1 - ymin) + y_shift) * 1000), 1000)
@@ -975,7 +979,7 @@ def smooth_raster_over_airports(tile, dico_airports, preserve_boundary=True):
     xstep = (x1 - x0) / tile.dem.nxdem
     ystep = (y1 - y0) / tile.dem.nydem
     upscale = max(
-        ceil(ystep * GEO.lat_to_m / 10), 1
+        ceil(ystep * GEO.METERS_PER_DEGREE_LATITUDE / 10), 1
     )  # target 10m of pixel size at most to avoiding aliasing
     for airport in dico_airports:
         try:
@@ -1466,8 +1470,10 @@ def flatten_helipads(airport_layer, vector_map, tile, treated_area):
             + numpy.array(
                 [
                     [
-                        cos(k * pi / 3) * 9 * GEO.m_to_lon(tile.lat),
-                        sin(k * pi / 3) * 9 * GEO.m_to_lat,
+                        cos(k * pi / 3)
+                        * 9
+                        * GEO.degrees_longitude_per_meter(tile.lat),
+                        sin(k * pi / 3) * 9 * GEO.DEGREES_LATITUDE_PER_METER,
                     ]
                     for k in range(7)
                 ]
