@@ -9,16 +9,25 @@ from math import sqrt
 import numpy
 import requests
 
-try:
-    import osgeo.gdal as gdal
-
-    has_gdal = True
-except ImportError:
-    has_gdal = False
 from PIL import Image
 
 import src.filenames as FNAMES
 import src.O4_UI_Utils as UI
+
+has_gdal = False
+
+try:
+    from osgeo import gdal
+
+    has_gdal = True
+except ImportError:
+    try:
+        import gdal
+
+        has_gdal = True
+    except ImportError:
+        pass
+
 
 available_sources = (
     "View",

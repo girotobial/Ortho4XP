@@ -14,7 +14,7 @@ from . import geo as GEO
 from . import O4_OSM_Utils as OSM
 from . import O4_UI_Utils as UI
 from . import O4_Vector_Utils as VECT
-from . import version
+from . import __version__
 
 if "dar" in sys.platform:
     Triangle4XP_cmd = os.path.join(FNAMES.Utils_dir, "Triangle4XP.app ")
@@ -349,7 +349,7 @@ def write_mesh_file(tile, vertices):
     nbr_vert = len(vertices) // 6
     nbr_tri = int(f_ele.readline().split()[0])
     f = open(FNAMES.mesh_file(tile.build_dir, tile.lat, tile.lon), "w")
-    f.write("MeshVersionFormatted " + version.version + "\n")
+    f.write("Mesh__version__Formatted " + __version__.__version__ + "\n")
     f.write("Dimension 3\n\n")
     f.write("Vertices\n")
     f.write(str(nbr_vert) + "\n")
