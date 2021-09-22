@@ -1,22 +1,6 @@
 import src.geo as geo
-import math
 
 import pytest
-
-
-@pytest.mark.parametrize(
-    ("degrees", "expected"),
-    [
-        (-45, -math.pi / 4),
-        (0, 0),
-        (90, math.pi / 2),
-        (180, math.pi),
-        (270, 3 / 2 * math.pi),
-        (360, 2 * math.pi),
-    ],
-)
-def test_radians(degrees, expected):
-    assert geo.radians(degrees) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
@@ -43,3 +27,11 @@ def test_degrees_longitude_per_meter(lattitude, expected):
     assert geo.degrees_longitude_per_meter(lattitude) == pytest.approx(
         expected
     )
+
+
+@pytest.mark.parametrize(
+    ("a", "b", "expected"),
+    [(((0, 0), (0, 10), 1113195))],
+)
+def test_greatcircle_distance(a, b, expected):
+    assert geo.greatcircle_distance(a, b) == expected
