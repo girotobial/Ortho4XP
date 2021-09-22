@@ -31,7 +31,11 @@ def test_degrees_longitude_per_meter(lattitude, expected):
 
 @pytest.mark.parametrize(
     ("a", "b", "expected"),
-    [(((0, 0), (0, 10), 1113195))],
+    [
+        ((0, 0), (0, 10), 1113195),
+        ((10, 0), (0, 10), 1570278),
+        ((40.63993, -73.77869), (51.4775, -0.461388), 8194793),
+    ],
 )
 def test_greatcircle_distance(a, b, expected):
-    assert geo.greatcircle_distance(a, b) == expected
+    assert geo.greatcircle_distance(a, b) == pytest.approx(expected)

@@ -1,5 +1,18 @@
 import functools
-from math import atan, atan2, cos, exp, floor, log, log2, pi, sin, sqrt, tan
+from math import (
+    atan,
+    cos,
+    exp,
+    floor,
+    log,
+    log2,
+    pi,
+    sqrt,
+    tan,
+    asin,
+)
+from typing import Tuple
+from numpy import radians
 
 import pyproj
 
@@ -7,22 +20,6 @@ EARTH_RADIUS = 6378137
 EARTH_CIRCUMFRENCE = 2 * EARTH_RADIUS * pi
 METERS_PER_DEGREE_LATITUDE = EARTH_CIRCUMFRENCE / 360
 DEGREES_LATITUDE_PER_METER = 1 / METERS_PER_DEGREE_LATITUDE
-
-
-def radians(degrees: float) -> float:
-    """Converts angles in degrees to radians
-
-    Parameters
-    ----------
-    degrees : float
-        An angle measured in degrees
-
-    Returns
-    -------
-    float
-        Equivilant angle in radians
-    """
-    return degrees * pi / 180
 
 
 def meters_per_degree_longitude(lattitude: float) -> float:
@@ -59,16 +56,70 @@ def degrees_longitude_per_meter(lattitude: float) -> float:
     return DEGREES_LATITUDE_PER_METER / cos(radians(lattitude))
 
 
-def dist(A, B):
-    # A=(lona,lata), B=(lonb,latb)
-    # returns the great circle distance between A and B over the earth surface
-    a = (
-        sin((A[1] - B[1]) * pi / 360) ** 2
-        + cos(A[1] * pi / 180)
-        * cos(B[1] * pi / 180)
-        * sin((A[0] - B[0]) * pi / 360) ** 2
+def hav(x: float) -> float:
+    """The haversine function
+
+    Parameters
+    ----------
+    x : float
+        Angle in radians
+
+    Returns
+    -------
+    float
+        The haversine of x
+    """
+    return (1 - cos(x)) * 0.5
+
+
+def ahav(x: float) -> float:
+    """The inverse haversine function
+
+    Parameters
+    ----------
+    x : float
+
+    Returns
+    -------
+    float
+        The inverse haversine (measured in radians) of x
+    """
+    return 2 * asin(sqrt(x))
+
+
+def greatcircle_distance(
+    a: Tuple[float, float], b: Tuple[float, float]
+) -> float:
+    """[summary]
+
+    Parameters
+    ----------
+    a : Tuple[float, float]
+        (longitude_a, latitude_a)
+    b : Tuple[float, float]
+        (longitude_b, latitude_b)
+
+    Returns
+    -------
+    float
+        The great circle distance between a and b over the earth's surface
+    """
+    a_radians = radians(a)
+    b_radians = radians(b)
+
+    a_lat = a_radians[1]
+    a_long = a_radians[0]
+    b_lat = b_radians[1]
+    b_long = b_radians[0]
+
+    longitude_difference = b_long - a_long
+    lattitude_difference = b_lat - a_lat
+
+    angle = hav(lattitude_difference) + cos(a_lat) * cos(b_lat) * hav(
+        longitude_difference
     )
-    return 2 * EARTH_RADIUS * atan2(sqrt(a), sqrt(1 - a))
+
+    return EARTH_RADIUS * ahav(angle)
 
 
 epsg = {}

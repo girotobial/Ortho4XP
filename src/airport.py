@@ -219,7 +219,9 @@ def attach_surfaces_to_airports(airport_layer, dico_airports):
                 )
             )
             for airport in dico_airports:
-                dist = GEO.dist(pt_check, dico_airports[airport]["repr_node"])
+                dist = GEO.greatcircle_distance(
+                    pt_check, dico_airports[airport]["repr_node"]
+                )
                 if dist < closest_dist:
                     closest_dist = dist
                     closest_apt = airport
@@ -621,7 +623,7 @@ def sort_and_reconstruct_runways(tile, airport_layer, dico_airports):
         for (nodeid_list, width) in zip(linear, linear_width):
             runway_start = airport_layer.dicosmn[nodeid_list[0]]
             runway_end = airport_layer.dicosmn[nodeid_list[-1]]
-            runway_length = GEO.dist(runway_start, runway_end)
+            runway_length = GEO.greatcircle_distance(runway_start, runway_end)
             runway_start = numpy.round(
                 numpy.array(runway_start) - numpy.array([tile.lon, tile.lat]),
                 7,
