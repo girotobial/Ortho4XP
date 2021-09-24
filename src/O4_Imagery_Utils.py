@@ -199,6 +199,12 @@ def initialize_color_filters_dict():
         f.close()
 
 
+class Provider:
+    """Validates the Lay file input"""
+
+    ...
+
+
 def parse_lay_file(f: typing.TextIO) -> dict[str, str]:
     def clean_line(line: str) -> str:
         line = line.strip("\n")
@@ -272,15 +278,11 @@ def initialize_providers_dict() -> None:
                             valid_provider = False
                     elif key == "epsg_code":
                         try:
-                            GEO.epsg[value] = GEO.pyproj.Proj(
-                                init="epsg:" + value
-                            )
+                            GEO.epsg[value] = GEO.pyproj.CRS(f"epsg:{value}")
                         except:
                             # HACK for Slovenia
                             if int(value) == 102060:
-                                GEO.epsg[value] = GEO.pyproj.Proj(
-                                    init="epsg:3912"
-                                )
+                                GEO.epsg[value] = GEO.pyproj.CRS("epsg:3912")
                             else:
                                 UI.vprint(
                                     0,
