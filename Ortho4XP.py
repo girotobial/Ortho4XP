@@ -2,60 +2,65 @@
 import os
 import sys
 
-import src.airport_data as APT_SRC
-import src.filenames as FNAMES
-import src.O4_GUI_Utils as GUI
-import src.O4_Imagery_Utils as IMG
-import src.O4_Mask_Utils as MASK
-import src.O4_Mesh_Utils as MESH
-import src.O4_Tile_Utils as TILE
-import src.O4_Vector_Map as VMAP
-import src.config as CFG  # CFG imported last because it can modify other modules variables
+import src.airport_data as airport_data
+import src.filenames as filenames
+import src.O4_GUI_Utils as gui
+import src.O4_Imagery_Utils as image
+import src.O4_Mask_Utils as mask
+import src.O4_Mesh_Utils as mesh
+import src.O4_Tile_Utils as tiles
+import src.O4_Vector_Map as vmap
+from src import (
+    config,  # CFG imported last because it can modify other modules variables
+)
 
 Ortho4XP_dir = os.pardir if getattr(sys, "frozen", False) else os.curdir
 
-cmd_line = "USAGE: Ortho4XP.py lat lon imagery zl (won't read a tile config)\n   OR:  Ortho4XP.py lat lon (with existing tile config file)"
+cmd_line = (
+    "USAGE: Ortho4XP.py lat lon imagery zl (won't read a tile config)\n   OR: "
+    " Ortho4XP.py lat lon (with existing tile config file)"
+)
 
 if __name__ == "__main__":
-    if not os.path.isdir(FNAMES.Utils_dir):
+    if not os.path.isdir(filenames.Utils_dir):
         print(
             "Missing ",
-            FNAMES.Utils_dir,
+            filenames.Utils_dir,
             "directory, check your install. Exiting.",
         )
         sys.exit()
     for directory in (
-        FNAMES.Preview_dir,
-        FNAMES.Provider_dir,
-        FNAMES.Extent_dir,
-        FNAMES.Filter_dir,
-        FNAMES.OSM_dir,
-        FNAMES.Mask_dir,
-        FNAMES.Imagery_dir,
-        FNAMES.Elevation_dir,
-        FNAMES.Geotiff_dir,
-        FNAMES.Patch_dir,
-        FNAMES.Tile_dir,
-        FNAMES.Tmp_dir,
-        FNAMES.Airport_dir,
+        filenames.Preview_dir,
+        filenames.Provider_dir,
+        filenames.Extent_dir,
+        filenames.Filter_dir,
+        filenames.OSM_dir,
+        filenames.Mask_dir,
+        filenames.Imagery_dir,
+        filenames.Elevation_dir,
+        filenames.Geotiff_dir,
+        filenames.Patch_dir,
+        filenames.Tile_dir,
+        filenames.Tmp_dir,
+        filenames.Airport_dir,
     ):
         if not os.path.isdir(directory):
             try:
                 os.makedirs(directory)
                 print("Creating missing directory", directory)
-            except:
+            except OSError:
                 print(
                     "Could not create required directory", directory, ". Exit."
                 )
                 sys.exit()
-    IMG.initialize_extents_dict()
-    IMG.initialize_color_filters_dict()
-    IMG.initialize_providers_dict()
-    IMG.initialize_combined_providers_dict()
-    APT_SRC.AirportDataSource.update_cache()
+    image.initialize_extents_dict()
+    image.initialize_color_filters_dict()
+    image.initialize_providers_dict()
+    image.initialize_combined_providers_dict()
+    airport_data.AirportDataSource.update_cache()
 
     if len(sys.argv) == 1:  # switch to the graphical interface
-        Ortho4XP = GUI.Ortho4XP_GUI()
+        Ortho4XP = gui.Ortho4XP_GUI()
         Ortho4XP.mainloop()
         print("Bon vol!")
 
@@ -66,12 +71,12 @@ if __name__ == "__main__":
         try:
             lat = int(sys.argv[1])
             lon = int(sys.argv[2])
-        except:
+        except ValueError:
             print(cmd_line)
             sys.exit()
         if len(sys.argv) == 3:
             try:
-                tile = CFG.Tile(lat, lon, "")
+                tile = config.Tile(lat, lon, "")
             except Exception as e:
                 print(e)
                 print("ERROR: could not read tile config file.")
@@ -80,17 +85,17 @@ if __name__ == "__main__":
             try:
                 provider_code = sys.argv[3]
                 zoomlevel = int(sys.argv[4])
-                tile = CFG.Tile(lat, lon, "")
+                tile = config.Tile(lat, lon, "")
                 tile.default_website = provider_code
                 tile.default_zl = zoomlevel
             except:
                 print(cmd_line)
                 sys.exit()
         try:
-            VMAP.build_poly_file(tile)
-            MESH.build_mesh(tile)
-            MASK.build_masks(tile)
-            TILE.build_tile(tile)
+            vmap.build_poly_file(tile)
+            mesh.build_mesh(tile)
+            mask.build_masks(tile)
+            tiles.build_tile(tile)
             print("Bon vol!")
         except:
             print("Crash!")
