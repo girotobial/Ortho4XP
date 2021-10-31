@@ -4,8 +4,8 @@ import numpy
 from rtree import index
 from shapely import affinity, geometry, ops
 
-from . import geo as GEO
-from . import O4_UI_Utils as UI
+from . import O4_UI_Utils as ui
+from . import geo
 
 # Some functions further down rely not only on a vector structure but also on a
 # metric (distances of course but more importantly angles and normals).
@@ -312,7 +312,7 @@ class Vector_Map:
         refine=False,
         cut=True,
     ):
-        UI.progress_bar(1, 0)
+        ui.progress_bar(1, 0)
         if isinstance(multipol, dict):
             iterloop = multipol.values()
             todo = len(multipol)
@@ -360,15 +360,16 @@ class Vector_Map:
                             numpy.array(polygon.representative_point())
                         ]
                 except Exception as e:
-                    UI.lvprint(
+                    ui.lvprint(
                         2,
-                        "Topologal inconsistency trying to tag a polygon with node ",
+                        "Topologal inconsistency trying to tag a polygon with"
+                        " node ",
                         list(polygon.exterior.coords)[0],
                     )
             done += 1
             if done % step == 0:
-                UI.progress_bar(1, int(100 * done / todo))
-                if UI.red_flag:
+                ui.progress_bar(1, int(100 * done / todo))
+                if ui.red_flag:
                     return 0
         return 1
 
@@ -381,7 +382,7 @@ class Vector_Map:
         refine=False,
         skip_cut=False,
     ):
-        UI.progress_bar(1, 0)
+        ui.progress_bar(1, 0)
         multilinestring = ensure_MultiLineString(multilinestring)
         todo = len(multilinestring)
         step = int(todo / 100) + 1
@@ -399,8 +400,8 @@ class Vector_Map:
                 self.insert_way(numpy.hstack([way, alti_way]), marker, check)
             done += 1
             if done % step == 0:
-                UI.progress_bar(1, int(100 * done / todo))
-                if UI.red_flag:
+                ui.progress_bar(1, int(100 * done / todo))
+                if ui.red_flag:
                     return 0
         return 1
 
@@ -448,7 +449,7 @@ class Vector_Map:
                     self.dico_edges[(id0, id1)]
                 ]
                 next_edge_id += 1
-        UI.vprint(
+        ui.vprint(
             2,
             "Simplified ",
             len(self.dico_nodes) - len(dico_nodes_new),
@@ -612,8 +613,8 @@ def MultiPolygon_to_Indexed_Polygons(multipol, merge_overlappings=True):
                 [dico_pol[polid] for polid in ids_to_merge] + [pol]
             )
         except Exception as e:
-            UI.bug_report()
-            UI.vprint(2, e)
+            ui.bug_report()
+            ui.vprint(2, e)
             return id_pol
         for polid in ids_to_merge:
             idx_pol.delete(polid, dico_pol[polid].bounds)
@@ -636,7 +637,7 @@ def MultiPolygon_to_Indexed_Polygons(multipol, merge_overlappings=True):
         return id_pol
 
     ########################################################################
-    UI.progress_bar(1, 0)
+    ui.progress_bar(1, 0)
     idx_pol = index.Index()
     dico_pol = {}
     id_pol = 0
@@ -659,7 +660,7 @@ def MultiPolygon_to_Indexed_Polygons(multipol, merge_overlappings=True):
             done += 1
             continue
         if not pol.is_valid:
-            UI.logprint(
+            ui.logprint(
                 "Invalid polygon detected at", list(pol.exterior.coords)[0]
             )
             done += 1
@@ -670,8 +671,8 @@ def MultiPolygon_to_Indexed_Polygons(multipol, merge_overlappings=True):
             id_pol = add_pol(pol, id_pol)
         done += 1
         if done % step == 0:
-            UI.progress_bar(1, int(100 * done / todo))
-            if UI.red_flag:
+            ui.progress_bar(1, int(100 * done / todo))
+            if ui.red_flag:
                 return 0
     return (idx_pol, dico_pol)
 
@@ -795,21 +796,21 @@ def indexed_difference(idx_pol1, dico_pol1, idx_pol2, dico_pol2):
 def coastline_to_MultiPolygon(coastline, lat, lon, custom_source=False):
     ######################################################################
     def encode_to_next(coord, new_way, remove_coords):
-        UI.vprint(3, "Computing next  coord for", coord)
+        ui.vprint(3, "Computing next  coord for", coord)
         if coord in inits:
-            UI.vprint(3, "    This is an init one")
+            ui.vprint(3, "    This is an init one")
             idx = inits.index(coord)
             new_way += segments[idx][2]
             next_coord = segments[idx][1]
-            UI.vprint(3, "    End one is", next_coord)
+            ui.vprint(3, "    End one is", next_coord)
             remove_coords.append(coord)
             remove_coords.append(next_coord)
         else:
-            UI.vprint(3, "    This is and end one")
+            ui.vprint(3, "    This is and end one")
             idx = bdcoords.index(coord)
             if idx < len(bdcoords) - 1:
                 next_coord = bdcoords[idx + 1]
-                UI.vprint(3, "    The following one is", next_coord)
+                ui.vprint(3, "    The following one is", next_coord)
                 next_coord_loop = next_coord
             else:
                 next_coord = bdcoords[0]
@@ -817,7 +818,7 @@ def coastline_to_MultiPolygon(coastline, lat, lon, custom_source=False):
             interp_coord = ceil(coord)
             while interp_coord < next_coord_loop:
                 new_way += bd_point(interp_coord)
-                UI.vprint(3, "Interp coord", bd_point(interp_coord))
+                ui.vprint(3, "Interp coord", bd_point(interp_coord))
                 interp_coord += 1
         return next_coord
 
@@ -870,18 +871,18 @@ def coastline_to_MultiPolygon(coastline, lat, lon, custom_source=False):
             ends.append(bd_coord(tmp[-1]))
             inits.append(bd_coord(tmp[0]))
     if osm_error:
-        UI.lvprint(
+        ui.lvprint(
             1,
             "ERROR in OSM coastline data. Coastline abruptly stops at",
             osm_badpoints,
         )
         return geometry.MultiPolygon()
     bdcoords = sorted(ends + inits)
-    UI.vprint(3, "bdcoords=", bdcoords)
-    UI.vprint(3, "inits=", ends)
-    UI.vprint(3, "ends=", inits)
+    ui.vprint(3, "bdcoords=", bdcoords)
+    ui.vprint(3, "inits=", ends)
+    ui.vprint(3, "ends=", inits)
     while bdcoords:
-        UI.vprint(3, "new loop")
+        ui.vprint(3, "new loop")
         new_way = []
         remove_coords = []
         first_coord = bdcoords[0]
@@ -889,12 +890,13 @@ def coastline_to_MultiPolygon(coastline, lat, lon, custom_source=False):
         count = 0
         while next_coord != first_coord:
             count += 1
-            UI.vprint(3, next_coord)
+            ui.vprint(3, next_coord)
             next_coord = encode_to_next(next_coord, new_way, remove_coords)
             if count == 1000:  # dead loop caused by faulty osm coastline data
-                UI.lvprint(
+                ui.lvprint(
                     1,
-                    "ERROR is OSM coastline data, probably caused by a coastline way with wrong orientation.",
+                    "ERROR is OSM coastline data, probably caused by a"
+                    " coastline way with wrong orientation.",
                 )
                 return geometry.MultiPolygon()
         bdpolys.append(new_way)
@@ -903,9 +905,10 @@ def coastline_to_MultiPolygon(coastline, lat, lon, custom_source=False):
                 bdcoords.remove(coord)
             except:
                 (x, y) = bd_point(coord)
-                UI.lvprint(
+                ui.lvprint(
                     1,
-                    "ERROR is OSM coastline data, probably caused by a triple junction around lat=",
+                    "ERROR is OSM coastline data, probably caused by a triple"
+                    " junction around lat=",
                     str(y + lat),
                     " lon=",
                     str(x + lon),
@@ -959,12 +962,12 @@ def length_in_meters(way_or_geometry):
             affinity.scale(
                 geometry.LineString(way_or_geometry), scalx, 1
             ).length
-            * GEO.METERS_PER_DEGREE_LATITUDE
+            * geo.METERS_PER_DEGREE_LATITUDE
         )
     else:
         return (
             affinity.scale(way_or_geometry, scalx, 1).length
-            * GEO.METERS_PER_DEGREE_LATITUDE
+            * geo.METERS_PER_DEGREE_LATITUDE
         )
 
 
@@ -982,11 +985,11 @@ def improved_buffer(
     simplify_length,
     show_progress=False,
 ):
-    buffer_width *= GEO.DEGREES_LATITUDE_PER_METER
-    separation_width *= GEO.DEGREES_LATITUDE_PER_METER
-    simplify_length *= GEO.DEGREES_LATITUDE_PER_METER
+    buffer_width *= geo.DEGREES_LATITUDE_PER_METER
+    separation_width *= geo.DEGREES_LATITUDE_PER_METER
+    simplify_length *= geo.DEGREES_LATITUDE_PER_METER
     if show_progress:
-        UI.progress_bar(1, 0)
+        ui.progress_bar(1, 0)
     input_geometry = affinity.affine_transform(
         input_geometry, [scalx, 0, 0, 1, 0, 0]
     )
@@ -997,21 +1000,21 @@ def improved_buffer(
         resolution=1,
     )
     if show_progress:
-        UI.progress_bar(1, 40)
-    if UI.red_flag:
+        ui.progress_bar(1, 40)
+    if ui.red_flag:
         return geometry.Polygon()
     output_geometry = output_geometry.buffer(
         -1 * separation_width, join_style=2, mitre_limit=1.5, resolution=1
     )
     if show_progress:
-        UI.progress_bar(1, 80)
-    if UI.red_flag:
+        ui.progress_bar(1, 80)
+    if ui.red_flag:
         return geometry.Polygon()
     if simplify_length:
         output_geometry = output_geometry.simplify(simplify_length)
     if show_progress:
-        UI.progress_bar(1, 100)
-    if UI.red_flag:
+        ui.progress_bar(1, 100)
+    if ui.red_flag:
         return geometry.Polygon()
     output_geometry = affinity.affine_transform(
         output_geometry, [1 / scalx, 0, 0, 1, 0, 0]
@@ -1055,7 +1058,7 @@ def weighted_normals(way, side="left"):  # normalized in the given metric
 
 ##############################################################################
 def shift_way(way, shift, side="left"):  # shift in m
-    return way + shift * GEO.DEGREES_LATITUDE_PER_METER * weighted_normals(
+    return way + shift * geo.DEGREES_LATITUDE_PER_METER * weighted_normals(
         way, side
     )
 
@@ -1064,7 +1067,7 @@ def shift_way(way, shift, side="left"):  # shift in m
 
 ##############################################################################
 def buffer_simple_way(way, width):  # width assumed in meter
-    width *= GEO.DEGREES_LATITUDE_PER_METER
+    width *= geo.DEGREES_LATITUDE_PER_METER
     way_normals = weighted_normals(way, "left")
     return numpy.concatenate(
         (
@@ -1088,7 +1091,7 @@ def refine_way(way, max_length):  # max_length assumed in meter
                     (way[i] - way[i + 1]) ** 2 * numpy.array([[scalx ** 2, 1]])
                 )
             )
-            * GEO.METERS_PER_DEGREE_LATITUDE
+            * geo.METERS_PER_DEGREE_LATITUDE
             // max_length
         )
         new_way.extend(
@@ -1145,7 +1148,7 @@ def point_to_segment_distance(way, A, B):
                 axis=1,
             )
         )
-        * GEO.METERS_PER_DEGREE_LATITUDE
+        * geo.METERS_PER_DEGREE_LATITUDE
     )
 
 
@@ -1209,7 +1212,7 @@ def weighted_alt(node, alt_idx, alt_dico, dem):
     pt = geometry.Point((x, y))
     for idx in alt_idx.intersection((x - eps1, y - eps1, x + eps1, y + eps1)):
         (linestring, leastsquarefit, width) = alt_dico[idx]
-        dist = pt.distance(linestring) * GEO.METERS_PER_DEGREE_LATITUDE
+        dist = pt.distance(linestring) * geo.METERS_PER_DEGREE_LATITUDE
         weight = numpy.exp(-dist / (2 * width))
         alti += (
             numpy.polyval(

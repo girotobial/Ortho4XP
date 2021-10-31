@@ -14,9 +14,7 @@ import shapely.geometry
 import shapely.ops
 import shapely.prepared
 
-from . import config as CFG
-from . import filenames as FNAMES
-from . import geo as GEO
+from . import config, filenames, geo
 from .common import IcaoCode
 
 ########################################################################################################################
@@ -420,8 +418,8 @@ class GTile:
     @staticmethod
     @functools.lru_cache(maxsize=2 ** 15)
     def _cached_polygon(x, y, zl):
-        (lat_max, lon_min) = GEO.gtile_to_wgs84(x, y, zl)
-        (lat_min, lon_max) = GEO.gtile_to_wgs84(x + 16, y + 16, zl)
+        (lat_max, lon_min) = geo.gtile_to_wgs84(x, y, zl)
+        (lat_min, lon_max) = geo.gtile_to_wgs84(x + 16, y + 16, zl)
         return shapely.geometry.Polygon(
             [
                 (lon_min, lat_min),
@@ -591,8 +589,8 @@ class Runway:
             lon_max,
             lat_max,
         ) = prepared_polygon.context.envelope.bounds
-        x_min, y_min = GEO.wgs84_to_orthogrid(lat_max, lon_min, zl)
-        x_max, y_max = GEO.wgs84_to_orthogrid(lat_min, lon_max, zl)
+        x_min, y_min = geo.wgs84_to_orthogrid(lat_max, lon_min, zl)
+        x_max, y_max = geo.wgs84_to_orthogrid(lat_min, lon_max, zl)
 
         return filter(
             lambda tile: prepared_polygon.intersects(tile.polygon()),
@@ -731,8 +729,8 @@ class AirportCollection:
 
     @staticmethod
     def _margin_width(zl, fraction):
-        lat_1, lon_1 = GEO.gtile_to_wgs84(0, 0, zl)
-        lat_2, lon_2 = GEO.gtile_to_wgs84(int(16 / fraction), 0, zl)
+        lat_1, lon_1 = geo.gtile_to_wgs84(0, 0, zl)
+        lat_2, lon_2 = geo.gtile_to_wgs84(int(16 / fraction), 0, zl)
         return shapely.geometry.Point(lon_1, lat_1).distance(
             shapely.geometry.Point(lon_2, lat_2)
         )
@@ -777,8 +775,8 @@ class AirportCollection:
                 lon_max,
                 lat_max,
             ) = margin_polygon.context.envelope.bounds
-            x_min, y_min = GEO.wgs84_to_orthogrid(lat_max, lon_min, zl)
-            x_max, y_max = GEO.wgs84_to_orthogrid(lat_min, lon_max, zl)
+            x_min, y_min = geo.wgs84_to_orthogrid(lat_max, lon_min, zl)
+            x_max, y_max = geo.wgs84_to_orthogrid(lat_min, lon_max, zl)
 
             # Only keep the ZLn tiles intersecting the margin polygon
             margin_tiles.update(
@@ -1131,7 +1129,7 @@ class XPlaneAptDatParser:
     def apt_dat_files():
         """Return the list of all the apt.dat files within the given X-Plane installation.
         The order is important : airports in the first files will be overwritten by those in the last ones (as in XP)"""
-        xp_dir = CFG.xplane_install_dir
+        xp_dir = config.xplane_install_dir
         apt_dat = os.path.join("Earth nav data", "apt.dat")
         default_scenery = os.path.join(
             xp_dir, "Resources", "default scenery", "default apt dat", apt_dat
@@ -1277,7 +1275,9 @@ class AirportDataSource:
             cache_was_rebuilt = True
             concurrent.futures.wait([cls._cache_updater_tile_jobs[tile]])
 
-        tile_cache_file = FNAMES.cached_arpt_data(lat=tile.lat, lon=tile.lon)
+        tile_cache_file = filenames.cached_arpt_data(
+            lat=tile.lat, lon=tile.lon
+        )
 
         if not os.path.exists(tile_cache_file):
             if cache_was_rebuilt:
@@ -1308,7 +1308,9 @@ class AirportDataSource:
 
     @staticmethod
     def _write_tile_cache(tile, airports_dict):
-        tile_cache_file = FNAMES.cached_arpt_data(lat=tile.lat, lon=tile.lon)
+        tile_cache_file = filenames.cached_arpt_data(
+            lat=tile.lat, lon=tile.lon
+        )
         os.makedirs(os.path.dirname(tile_cache_file), exist_ok=True)
         with open(tile_cache_file, "w") as f:
             # See https://bugs.python.org/issue12134, it's a lot faster to first dump to a json string, and only then
@@ -1348,7 +1350,7 @@ class AirportDataSource:
 
         # Finally, rewrite the cache info file
         with open(
-            os.path.join(FNAMES.Airport_dir, "cache_info.json"), "w"
+            os.path.join(filenames.Airport_dir, "cache_info.json"), "w"
         ) as f:
             f.write(
                 json.dumps(
@@ -1369,7 +1371,9 @@ class AirportDataSource:
         """Compare the current list of apt.dat files against what we used last time.
         If any of the apt.dat file were changed/added/removed, then return the new list.
         Otherwise, just return an empty list so that cache rebuilding is skipped."""
-        cache_info_file = os.path.join(FNAMES.Airport_dir, "cache_info.json")
+        cache_info_file = os.path.join(
+            filenames.Airport_dir, "cache_info.json"
+        )
 
         if not os.path.exists(cache_info_file):
             return XPlaneAptDatParser.apt_dat_files()
@@ -1418,7 +1422,7 @@ class AirportDataSource:
     @classmethod
     def update_cache(cls, force_rebuild=False):
         if force_rebuild:
-            os.remove(os.path.join(FNAMES.Airport_dir, "cache_info.json"))
+            os.remove(os.path.join(filenames.Airport_dir, "cache_info.json"))
 
         apt_dat_files = cls.apt_dat_files()
         if apt_dat_files:

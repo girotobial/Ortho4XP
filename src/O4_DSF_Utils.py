@@ -13,11 +13,9 @@ from math import ceil, floor
 import numpy
 from PIL import Image, ImageDraw
 
-from . import airport_data as APT_SRC
-from . import filenames as FNAMES
-from . import geo as GEO
-from . import O4_Mask_Utils as MASK
-from . import O4_UI_Utils as UI
+from . import O4_Mask_Utils as mask
+from . import O4_UI_Utils as ui
+from . import airport_data, filenames, geo
 
 quad_init_level = 3
 quad_capacity_high = 50000
@@ -98,15 +96,15 @@ class QuadTree(dict):
     def statistics(self):
         lengths = numpy.array([self[key]["size"] for key in self])
         depths = numpy.array([len(key[0]) for key in self])
-        UI.vprint(1, "     Number of buckets:", len(lengths))
-        UI.vprint(
+        ui.vprint(1, "     Number of buckets:", len(lengths))
+        ui.vprint(
             1,
             "     Average depth:",
             depths.mean(),
             ", Average bucket size:",
             lengths.mean(),
         )
-        UI.vprint(1, "     Largest depth:", numpy.max(depths))
+        ui.vprint(1, "     Largest depth:", numpy.max(depths))
 
 
 ##############################################################################
@@ -135,17 +133,18 @@ def zone_list_to_ortho_dico(tile):
     progressive_zones = list()
 
     if tile.cover_airports_with_highres in ["True", "ICAO"]:
-        UI.vprint(1, "-> Checking airport locations for upgraded zoomlevel.")
+        ui.vprint(1, "-> Checking airport locations for upgraded zoomlevel.")
         try:
-            f = open(FNAMES.apt_file(tile), "rb")
+            f = open(filenames.apt_file(tile), "rb")
             dico_airports = pickle.load(f)
             f.close()
         except:
-            UI.vprint(
+            ui.vprint(
                 1,
                 "   WARNING: File",
-                FNAMES.apt_file(tile),
-                "is missing (erased after Step 1?), cannot check airport info for upgraded zoomlevel.",
+                filenames.apt_file(tile),
+                "is missing (erased after Step 1?), cannot check airport info"
+                " for upgraded zoomlevel.",
             )
             dico_airports = {}
 
@@ -166,28 +165,28 @@ def zone_list_to_ortho_dico(tile):
             xmin -= (
                 1000
                 * tile.cover_extent
-                * GEO.degrees_longitude_per_meter(tile.lat)
+                * geo.degrees_longitude_per_meter(tile.lat)
             )
             xmax += (
                 1000
                 * tile.cover_extent
-                * GEO.degrees_longitude_per_meter(tile.lat)
+                * geo.degrees_longitude_per_meter(tile.lat)
             )
-            ymax += 1000 * tile.cover_extent * GEO.DEGREES_LATITUDE_PER_METER
-            ymin -= 1000 * tile.cover_extent * GEO.DEGREES_LATITUDE_PER_METER
+            ymax += 1000 * tile.cover_extent * geo.DEGREES_LATITUDE_PER_METER
+            ymin -= 1000 * tile.cover_extent * geo.DEGREES_LATITUDE_PER_METER
             # round off to texture boundaries at tile.cover_zl zoomlevel
-            (til_x_left, til_y_top) = GEO.wgs84_to_orthogrid(
+            (til_x_left, til_y_top) = geo.wgs84_to_orthogrid(
                 ymax + tile.lat, xmin + tile.lon, tile.cover_zl.default
             )
-            (ymax, xmin) = GEO.gtile_to_wgs84(
+            (ymax, xmin) = geo.gtile_to_wgs84(
                 til_x_left, til_y_top, tile.cover_zl.default
             )
             ymax -= tile.lat
             xmin -= tile.lon
-            (til_x_left2, til_y_top2) = GEO.wgs84_to_orthogrid(
+            (til_x_left2, til_y_top2) = geo.wgs84_to_orthogrid(
                 ymin + tile.lat, xmax + tile.lon, tile.cover_zl.default
             )
-            (ymin, xmax) = GEO.gtile_to_wgs84(
+            (ymin, xmax) = geo.gtile_to_wgs84(
                 til_x_left2 + 16, til_y_top2 + 16, tile.cover_zl.default
             )
             ymin -= tile.lat
@@ -204,13 +203,14 @@ def zone_list_to_ortho_dico(tile):
             airport_array[rowmin : rowmax + 1, colmin : colmax + 1] = 1
 
     elif tile.cover_airports_with_highres == "Progressive":
-        UI.vprint(
+        ui.vprint(
             1,
-            "-> Auto-generating custom ZL zones along the runways of each airport.",
+            "-> Auto-generating custom ZL zones along the runways of each"
+            " airport.",
         )
         wall_time = time.clock()
-        airport_collection = APT_SRC.AirportCollection(
-            xp_tile=APT_SRC.XPlaneTile(tile.lat, tile.lon),
+        airport_collection = airport_data.AirportCollection(
+            xp_tile=airport_data.XPlaneTile(tile.lat, tile.lon),
             include_surrounding_tiles=True,
         )
         progressive_zones = airport_collection.zone_list(
@@ -226,14 +226,14 @@ def zone_list_to_ortho_dico(tile):
         wall_time_delta = datetime.timedelta(
             seconds=(time.clock() - wall_time)
         )
-        UI.lvprint(0, "ZL zones computed in {}s".format(wall_time_delta))
+        ui.lvprint(0, "ZL zones computed in {}s".format(wall_time_delta))
 
     dico_customzl = {}
     dico_tmp = {}
-    til_x_min, til_y_min = GEO.wgs84_to_orthogrid(
+    til_x_min, til_y_min = geo.wgs84_to_orthogrid(
         tile.lat + 1, tile.lon, tile.mesh_zl
     )
-    til_x_max, til_y_max = GEO.wgs84_to_orthogrid(
+    til_x_max, til_y_max = geo.wgs84_to_orthogrid(
         tile.lat, tile.lon + 1, tile.mesh_zl
     )
     base_zone = (
@@ -264,7 +264,7 @@ def zone_list_to_ortho_dico(tile):
 
     for til_x in range(til_x_min, til_x_max + 1, 16):
         for til_y in range(til_y_min, til_y_max + 1, 16):
-            (latp, lonp) = GEO.gtile_to_wgs84(
+            (latp, lonp) = geo.gtile_to_wgs84(
                 til_x + 8, til_y + 8, tile.mesh_zl
             )
             lonp = max(min(lonp, tile.lon + 1), tile.lon)
@@ -343,11 +343,11 @@ def create_terrain_file(
         os.path.join(tile.build_dir, "terrain", ter_file_name), "w"
     ) as f:
         f.write("A\n800\nTERRAIN\n\n")
-        [lat_med, lon_med] = GEO.gtile_to_wgs84(
+        [lat_med, lon_med] = geo.gtile_to_wgs84(
             til_x_left + 8, til_y_top + 8, zoomlevel
         )
         texture_approx_size = int(
-            GEO.webmercator_pixel_size(lat_med, zoomlevel) * 4096
+            geo.webmercator_pixel_size(lat_med, zoomlevel) * 4096
         )
         f.write(
             "LOAD_CENTER "
@@ -373,7 +373,7 @@ def create_terrain_file(
                 )
             ):
                 shutil.copy(
-                    os.path.join(FNAMES.Utils_dir, "water_normal_map.dds"),
+                    os.path.join(filenames.Utils_dir, "water_normal_map.dds"),
                     os.path.join(tile.build_dir, "textures"),
                 )
         elif tri_type == 1 or (
@@ -386,7 +386,7 @@ def create_terrain_file(
                 )
             ):
                 shutil.copy(
-                    os.path.join(FNAMES.Utils_dir, "water_transition.png"),
+                    os.path.join(filenames.Utils_dir, "water_transition.png"),
                     os.path.join(tile.build_dir, "textures"),
                 )
         elif (
@@ -405,7 +405,7 @@ def create_terrain_file(
             )
             f.write(
                 "BORDER_TEX ../textures/"
-                + FNAMES.mask_file(
+                + filenames.mask_file(
                     til_x_left, til_y_top, zoomlevel, provider_code
                 )
                 + "\n"
@@ -428,7 +428,7 @@ def create_terrain_file(
                 )
             ):
                 shutil.copy(
-                    os.path.join(FNAMES.Utils_dir, "water_normal_map.dds"),
+                    os.path.join(filenames.Utils_dir, "water_normal_map.dds"),
                     os.path.join(tile.build_dir, "textures"),
                 )
             pass
@@ -453,15 +453,15 @@ def build_dsf(tile, download_queue):
     dsf_file_name = os.path.join(
         tile.build_dir,
         "Earth nav data",
-        FNAMES.long_latlon(tile.lat, tile.lon) + ".dsf",
+        filenames.long_latlon(tile.lat, tile.lon) + ".dsf",
     )
-    UI.vprint(1, "-> Computing the pool quadtree")
+    ui.vprint(1, "-> Computing the pool quadtree")
     if tile.add_low_res_sea_ovl or tile.use_masks_for_inland:
         quad_capacity = quad_capacity_low
     else:
         quad_capacity = quad_capacity_high
     pool_quadtree = QuadTree(quad_init_level, quad_capacity)
-    f_mesh = open(FNAMES.mesh_file(tile.build_dir, tile.lat, tile.lon), "r")
+    f_mesh = open(filenames.mesh_file(tile.build_dir, tile.lat, tile.lon), "r")
     mesh_version = float(f_mesh.readline().strip().split()[-1])
     for i in range(3):
         f_mesh.readline()
@@ -615,9 +615,9 @@ def build_dsf(tile, download_queue):
     for tri in [tri for tri in tri_list if tri[3] == 2]:
         (n1, n2, n3, tri_type) = tri
         if i % step == 0:
-            UI.progress_bar(1, int(i / step * 0.9))
-            if UI.red_flag:
-                UI.vprint(1, "DSF construction interrupted.")
+            ui.progress_bar(1, int(i / step * 0.9))
+            if ui.red_flag:
+                ui.vprint(1, "DSF construction interrupted.")
                 return 0
         i += 1
         bary_lon = (
@@ -629,7 +629,7 @@ def build_dsf(tile, download_queue):
             + node_coords[5 * n3 + 1]
         ) / 3
         texture_attributes = dico_customzl[
-            GEO.wgs84_to_orthogrid(bary_lat, bary_lon, tile.mesh_zl)
+            geo.wgs84_to_orthogrid(bary_lat, bary_lon, tile.mesh_zl)
         ]
         # The entries for the terrain and texture main dictionnaries
         terrain_attributes = (texture_attributes, tri_type)
@@ -640,15 +640,15 @@ def build_dsf(tile, download_queue):
             needs_new_terrain = False
             # if not we need to check with masks values
             if terrain_attributes not in skipped_terrains_for_masking:
-                mask_im = MASK.needs_mask(tile, *texture_attributes)
+                mask_im = mask.needs_mask(tile, *texture_attributes)
                 if mask_im:
-                    UI.vprint(2, "      Use of an alpha mask.")
+                    ui.vprint(2, "      Use of an alpha mask.")
                     needs_new_terrain = True
                     mask_im.save(
                         os.path.join(
                             tile.build_dir,
                             "textures",
-                            FNAMES.mask_file(*texture_attributes),
+                            filenames.mask_file(*texture_attributes),
                         )
                     )
                 else:
@@ -659,7 +659,7 @@ def build_dsf(tile, download_queue):
                             os.path.join(
                                 tile.build_dir,
                                 "textures",
-                                FNAMES.mask_file(*texture_attributes),
+                                filenames.mask_file(*texture_attributes),
                             )
                         )
                     except:
@@ -675,7 +675,7 @@ def build_dsf(tile, download_queue):
                 )
                 if is_overlay:
                     overlay_terrains.add(terrain_idx)
-                texture_file_name = FNAMES.dds_file_name_from_attributes(
+                texture_file_name = filenames.dds_file_name_from_attributes(
                     *texture_attributes
                 )
                 # do we need to download a new texture ?
@@ -701,20 +701,21 @@ def build_dsf(tile, download_queue):
                             texture_file_name = texture_file_name.replace(
                                 "dds", "partial.dds"
                             )
-                            UI.vprint(
+                            ui.vprint(
                                 1,
                                 "   Texture file "
                                 + texture_file_name
                                 + " already present.",
                             )
                         else:
-                            UI.vprint(
+                            ui.vprint(
                                 1,
-                                "   Missing a required texture, conversion from g2xpl requires texture download.",
+                                "   Missing a required texture, conversion"
+                                " from g2xpl requires texture download.",
                             )
                             download_queue.put(texture_attributes)
                     else:
-                        UI.vprint(
+                        ui.vprint(
                             1,
                             "   Texture file "
                             + texture_file_name
@@ -745,7 +746,7 @@ def build_dsf(tile, download_queue):
                 if node_hash in textured_nodes:
                     (idx_dsfpool, pos_in_pool) = textured_nodes[node_hash]
                 else:
-                    (s, t) = GEO.st_coord(
+                    (s, t) = geo.st_coord(
                         node_coords[5 * n + 1],
                         node_coords[5 * n],
                         *texture_attributes
@@ -826,7 +827,7 @@ def build_dsf(tile, download_queue):
         ) or tile.add_low_res_sea_ovl:  # experimental water over sea
             # sea_zl=int(IMG.providers_dict['SEA']['max_zl'])
             sea_zl = experimental_water_zl
-            (til_x_left, til_y_top) = GEO.wgs84_to_orthogrid(
+            (til_x_left, til_y_top) = geo.wgs84_to_orthogrid(
                 bary_lat, bary_lon, sea_zl
             )
             texture_attributes = (til_x_left, til_y_top, sea_zl, "SEA")
@@ -844,7 +845,7 @@ def build_dsf(tile, download_queue):
                     lambda: array.array("H")
                 )
                 dico_terrains[terrain_attributes] = terrain_idx
-                texture_file_name = FNAMES.dds_file_name_from_attributes(
+                texture_file_name = filenames.dds_file_name_from_attributes(
                     *texture_attributes
                 )
                 # do we need to download a new texture ?
@@ -856,7 +857,7 @@ def build_dsf(tile, download_queue):
                     ):
                         download_queue.put(texture_attributes)
                     else:
-                        UI.vprint(
+                        ui.vprint(
                             1,
                             "   Texture file "
                             + texture_file_name
@@ -883,7 +884,7 @@ def build_dsf(tile, download_queue):
                 if node_hash in textured_nodes:
                     (idx_dsfpool, pos_in_pool) = textured_nodes[node_hash]
                 else:
-                    (s, t) = GEO.st_coord(
+                    (s, t) = geo.st_coord(
                         node_coords[5 * n + 1],
                         node_coords[5 * n],
                         *texture_attributes
@@ -935,9 +936,9 @@ def build_dsf(tile, download_queue):
     for tri in [tri for tri in tri_list if tri[3] < 2]:
         (n1, n2, n3, tri_type) = tri
         if i % step == 0:
-            UI.progress_bar(1, int(i / step * 0.9))
-            if UI.red_flag:
-                UI.vprint(1, "DSF construction interrupted.")
+            ui.progress_bar(1, int(i / step * 0.9))
+            if ui.red_flag:
+                ui.vprint(1, "DSF construction interrupted.")
                 return 0
         i += 1
         bary_lon = (
@@ -949,7 +950,7 @@ def build_dsf(tile, download_queue):
             + node_coords[5 * n3 + 1]
         ) / 3
         texture_attributes = dico_customzl[
-            GEO.wgs84_to_orthogrid(bary_lat, bary_lon, tile.mesh_zl)
+            geo.wgs84_to_orthogrid(bary_lat, bary_lon, tile.mesh_zl)
         ]
         # The entries for the terrain and texture main dictionnaries
         terrain_attributes = (texture_attributes, tri_type)
@@ -963,7 +964,7 @@ def build_dsf(tile, download_queue):
             is_overlay = tri_type == 1 and not (tile.experimental_water & 1)
             if is_overlay:
                 overlay_terrains.add(terrain_idx)
-            texture_file_name = FNAMES.dds_file_name_from_attributes(
+            texture_file_name = filenames.dds_file_name_from_attributes(
                 *texture_attributes
             )
             # do we need to download a new texture ?
@@ -983,20 +984,21 @@ def build_dsf(tile, download_queue):
                         texture_file_name = texture_file_name.replace(
                             "dds", "partial.dds"
                         )
-                        UI.vprint(
+                        ui.vprint(
                             1,
                             "   Texture file "
                             + texture_file_name
                             + " already present.",
                         )
                     else:
-                        UI.vprint(
+                        ui.vprint(
                             1,
-                            "   Missing a required texture, conversion from g2xpl requires texture download.",
+                            "   Missing a required texture, conversion from"
+                            " g2xpl requires texture download.",
                         )
                         download_queue.put(texture_attributes)
                 else:
-                    UI.vprint(
+                    ui.vprint(
                         1,
                         "   Texture file "
                         + texture_file_name
@@ -1024,7 +1026,7 @@ def build_dsf(tile, download_queue):
             if node_hash in textured_nodes:
                 (idx_dsfpool, pos_in_pool) = textured_nodes[node_hash]
             else:
-                (s, t) = GEO.st_coord(
+                (s, t) = geo.st_coord(
                     node_coords[5 * n + 1],
                     node_coords[5 * n],
                     *texture_attributes
@@ -1122,9 +1124,9 @@ def build_dsf(tile, download_queue):
 
     download_queue.put("quit")
 
-    UI.vprint(1, "-> Encoding of the DSF file")
-    UI.vprint(1, "     Final nbr of nodes: " + str(len_textured_nodes))
-    UI.vprint(2, "     Final nbr of cross pool tris: " + str(total_cross_pool))
+    ui.vprint(1, "-> Encoding of the DSF file")
+    ui.vprint(1, "     Final nbr of nodes: " + str(len_textured_nodes))
+    ui.vprint(2, "     Final nbr of cross pool tris: " + str(total_cross_pool))
 
     # Now is time to write our DSF to disk, the exact binary format is described on the wiki
     if os.path.exists(dsf_file_name + ".bak"):
@@ -1165,10 +1167,10 @@ def build_dsf(tile, download_queue):
             size_of_geod_atom += 21 + dsf_pool_plane[k] * (
                 9 + 2 * dsf_pool_length[k]
             )
-    UI.vprint(
+    ui.vprint(
         2, "     Size of DEFN atom : " + str(size_of_defn_atom) + " bytes."
     )
-    UI.vprint(
+    ui.vprint(
         2, "     Size of GEOD atom : " + str(size_of_geod_atom) + " bytes."
     )
     f = open(dsf_file_name + ".tmp", "wb")
@@ -1233,9 +1235,9 @@ def build_dsf(tile, download_queue):
         for l in range(2 * dsf_pool_plane[k]):
             f.write(struct.pack("<f", pool_param[k % pool_nbr][l]))
 
-    UI.progress_bar(1, 95)
-    if UI.red_flag:
-        UI.vprint(1, "DSF construction interrupted.")
+    ui.progress_bar(1, 95)
+    if ui.red_flag:
+        ui.vprint(1, "DSF construction interrupted.")
         return 0
 
     # Since we possibly skipped some pools, and since we possibly
@@ -1275,7 +1277,7 @@ def build_dsf(tile, download_queue):
                     len(textured_tris[terrain_idx][idx_dsfpool])
                     + ceil(len(textured_tris[terrain_idx][idx_dsfpool]) / 510)
                 )
-    UI.vprint(
+    ui.vprint(
         2, "     Size of CMDS atom : " + str(size_of_cmds_atom) + " bytes."
     )
     f.write(b"SDMC")  # CMDS header
@@ -1400,9 +1402,9 @@ def build_dsf(tile, download_queue):
                             )
                         )  # POS_IN_PO0L IDX
 
-    UI.progress_bar(1, 98)
-    if UI.red_flag:
-        UI.vprint(1, "DSF construction interrupted.")
+    ui.progress_bar(1, 98)
+    if ui.red_flag:
+        ui.vprint(1, "DSF construction interrupted.")
         return 0
 
     f.close()
@@ -1415,7 +1417,7 @@ def build_dsf(tile, download_queue):
     f = open(dsf_file_name + ".tmp", "ab")
     f.write(md5sum)
     f.close()
-    UI.progress_bar(1, 100)
+    ui.progress_bar(1, 100)
     size_of_dsf = (
         28
         + size_of_head_atom
@@ -1423,12 +1425,12 @@ def build_dsf(tile, download_queue):
         + size_of_geod_atom
         + size_of_cmds_atom
     )
-    UI.vprint(
+    ui.vprint(
         1,
         "     DSF file encoded, total size is :",
         size_of_dsf,
         "bytes",
-        "(" + UI.human_print(size_of_dsf) + ")",
+        "(" + ui.human_print(size_of_dsf) + ")",
     )
     return 1
 
@@ -1516,8 +1518,8 @@ def parse_ter_file(ter_filename):
                 texture_size = int(m.group("texture_size"))
 
                 # Compute the ZL from the latitude, the terrain size and the texture size
-                zoomlevel = GEO.webmercator_zoomlevel(
+                zoomlevel = geo.webmercator_zoomlevel(
                     lat_med, terrain_size / texture_size
                 )
-                x, y = GEO.wgs84_to_orthogrid(lat_med, lon_med, zoomlevel)
+                x, y = geo.wgs84_to_orthogrid(lat_med, lon_med, zoomlevel)
                 return x, y, zoomlevel

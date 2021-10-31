@@ -8,7 +8,7 @@ import numpy
 import requests
 from shapely import geometry, ops
 
-import src.filenames as FNAMES
+import src.filenames as filenames
 import src.O4_UI_Utils as UI
 
 overpass_servers = {
@@ -139,7 +139,8 @@ class OSM_layer:
                         "'" + items[1] + "'",
                         "and role",
                         "'" + role + "'",
-                        "which was not treated (only deal with 'ways' of role 'inner' or 'outer').",
+                        "which was not treated (only deal with 'ways' of role"
+                        " 'inner' or 'outer').",
                     )
                     continue
                 try:
@@ -264,7 +265,8 @@ class OSM_layer:
         if not normal_exit:
             UI.lvprint(
                 0,
-                "ERROR: OSM overpass server answer was corrupted (no ending </OSM> tag)",
+                "ERROR: OSM overpass server answer was corrupted (no ending"
+                " </OSM> tag)",
             )
             return 0
         UI.vprint(
@@ -289,7 +291,8 @@ class OSM_layer:
             UI.vprint(1, "    Could not open", filename, "for writing.")
             return 0
         fout.write(
-            '<?xml version="1.0" encoding="UTF-8"?>\n<osm version="0.6" generator="Ortho4XP">\n'
+            '<?xml version="1.0" encoding="UTF-8"?>\n<osm version="0.6"'
+            ' generator="Ortho4XP">\n'
         )
         if not len(self.dicosmfirst["n"]):
             for nodeid, (lonp, latp) in self.dicosmn.items():
@@ -419,7 +422,7 @@ def OSM_queries_to_OSM_layer(
                 else:
                     if tag not in target_tags[osm_type]:
                         target_tags[osm_type].append(tag)
-    cached_data_filename = FNAMES.osm_cached(lat, lon, cached_suffix)
+    cached_data_filename = filenames.osm_cached(lat, lon, cached_suffix)
     if cached_suffix and os.path.isfile(cached_data_filename):
         UI.vprint(1, "    * Recycling OSM data from", cached_data_filename)
         return osm_layer.update_dicosm(
@@ -428,7 +431,9 @@ def OSM_queries_to_OSM_layer(
     for query in queries:
         # look first for cached data (old scheme)
         if isinstance(query, str):
-            old_cached_data_filename = FNAMES.osm_old_cached(lat, lon, query)
+            old_cached_data_filename = filenames.osm_old_cached(
+                lat, lon, query
+            )
             if os.path.isfile(old_cached_data_filename):
                 UI.vprint(1, "    * Recycling OSM data for", query)
                 osm_layer.update_dicosm(
@@ -546,7 +551,8 @@ def get_overpass_data(query, bbox, server_code=None):
                         1,
                         "        OSM server",
                         true_server_code,
-                        "sent a corrupted answer (no closing </osm> tag in answer), new tentative in",
+                        "sent a corrupted answer (no closing </osm> tag in"
+                        " answer), new tentative in",
                         2 ** tentative,
                         "sec...",
                     )
@@ -555,7 +561,8 @@ def get_overpass_data(query, bbox, server_code=None):
                         1,
                         "        OSM server",
                         true_server_code,
-                        "sent us an error code for the data (data too big ?), new tentative in",
+                        "sent us an error code for the data (data too big ?),"
+                        " new tentative in",
                         2 ** tentative,
                         "sec...",
                     )

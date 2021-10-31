@@ -1,6 +1,6 @@
 import threading
 
-from . import O4_UI_Utils as UI
+from . import O4_UI_Utils as ui
 
 
 class parallel_worker(threading.Thread):
@@ -16,14 +16,14 @@ class parallel_worker(threading.Thread):
             args = self._queue.get()
             if isinstance(args, str) and args == "quit":
                 try:
-                    UI.progress_bar(self._progress["bar"], 100)
+                    ui.progress_bar(self._progress["bar"], 100)
                 except:
                     pass
                 return 1
             self._success[0] = self._task(*args) and self._success[0]
             if self._progress:
                 self._progress["done"] += 1
-                UI.progress_bar(
+                ui.progress_bar(
                     self._progress["bar"],
                     int(
                         100
@@ -31,7 +31,7 @@ class parallel_worker(threading.Thread):
                         / (self._progress["done"] + self._queue.qsize())
                     ),
                 )
-            if UI.red_flag:
+            if ui.red_flag:
                 return 0
 
 
@@ -45,7 +45,7 @@ def parallel_execute(task, queue, nbr_workers, progress=None):
         workers.append(worker)
     for worker in workers:
         worker.join()
-    if UI.red_flag:
+    if ui.red_flag:
         return 0
     return success[0]
 

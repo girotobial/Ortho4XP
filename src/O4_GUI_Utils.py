@@ -32,20 +32,20 @@ from tkinter import (
 
 from PIL import Image, ImageDraw, ImageTk
 
-from . import airport_data as APT_SRC
-from . import common
-from . import config as CFG
-from . import O4_DSF_Utils as DSF
-from . import filenames as FNAMES
-from . import geo as GEO
-from . import O4_Imagery_Utils as IMG
-from . import O4_Mask_Utils as MASK
-from . import O4_Mesh_Utils as MESH
-from . import O4_Tile_Utils as TILE
-from . import O4_UI_Utils as UI
-from . import O4_Vector_Map as VMAP
-from . import O4_Vector_Utils as VECT
+from . import O4_DSF_Utils as dsf
+from . import O4_Imagery_Utils as imagery
+from . import O4_Mask_Utils as mask
+from . import O4_Mesh_Utils as mesh
+from . import O4_Tile_Utils as tiles
+from . import O4_UI_Utils as ui
+from . import O4_Vector_Map as vmap
+from . import O4_Vector_Utils as vect
 from . import __version__
+from . import airport_data as airport_data
+from . import common
+from . import config as config
+from . import filenames
+from . import geo as geo
 
 # Set OsX=True if you prefer the OsX way of drawing existing tiles but are on Linux or Windows.
 OsX = "dar" in sys.platform
@@ -89,15 +89,15 @@ class Ortho4XP_GUI(tk.Tk):
         self.option_add("*Font", "TkFixedFont")
 
         # Let UI know ourself
-        UI.gui = self
+        ui.gui = self
         # Initialize providers combobox entries
         self.map_list = sorted(
             [
                 provider_code
-                for provider_code in set(IMG.providers_dict)
-                if IMG.providers_dict[provider_code]["in_GUI"]
+                for provider_code in set(imagery.providers_dict)
+                if imagery.providers_dict[provider_code]["in_GUI"]
             ]
-            + sorted(set(IMG.combined_providers_dict))
+            + sorted(set(imagery.combined_providers_dict))
         )
         try:
             self.map_list.remove("OSM")
@@ -115,22 +115,22 @@ class Ortho4XP_GUI(tk.Tk):
         # Resources
         self.title("Ortho4XP " + __version__.__version__)
         self.folder_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Folder.gif")
+            file=os.path.join(filenames.Utils_dir, "Folder.gif")
         )
         self.earth_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Earth.gif")
+            file=os.path.join(filenames.Utils_dir, "Earth.gif")
         )
         self.loupe_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Loupe.gif")
+            file=os.path.join(filenames.Utils_dir, "Loupe.gif")
         )
         self.config_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Config.gif")
+            file=os.path.join(filenames.Utils_dir, "Config.gif")
         )
         self.stop_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Stop.gif")
+            file=os.path.join(filenames.Utils_dir, "Stop.gif")
         )
         self.exit_icon = tk.PhotoImage(
-            file=os.path.join(FNAMES.Utils_dir, "Exit.gif")
+            file=os.path.join(filenames.Utils_dir, "Exit.gif")
         )
 
         # Frame instances and placement
@@ -367,7 +367,8 @@ class Ortho4XP_GUI(tk.Tk):
         # reinitialization from last visit
         try:
             f = open(
-                os.path.join(FNAMES.Ortho4XP_dir, ".last_gui_params.txt"), "r"
+                os.path.join(filenames.Ortho4XP_dir, ".last_gui_params.txt"),
+                "r",
             )
             (lat, lon, default_website, default_zl) = f.readline().split()
             custom_build_dir = f.readline().strip()
@@ -427,9 +428,9 @@ class Ortho4XP_GUI(tk.Tk):
 
     def update_cfg(self, *args):
         if self.default_website.get():
-            CFG.default_website = str(self.default_website.get())
+            config.default_website = str(self.default_website.get())
         if self.default_zl.get():
-            CFG.default_zl = int(self.default_zl.get())
+            config.default_zl = int(self.default_zl.get())
 
     def get_lat_lon(self, check=True):
         error_string = ""
@@ -448,7 +449,7 @@ class Ortho4XP_GUI(tk.Tk):
         except:
             error_string += "Longitude wrongly encoded."
         if error_string and check:
-            UI.vprint(0, "Error: " + error_string)
+            ui.vprint(0, "Error: " + error_string)
             return None
         elif error_string:
             return (48, -6)
@@ -457,7 +458,7 @@ class Ortho4XP_GUI(tk.Tk):
     def tile_from_interface(self):
         try:
             (lat, lon) = self.get_lat_lon()
-            return CFG.Tile(lat, lon, str(self.custom_build_dir.get()))
+            return config.Tile(lat, lon, str(self.custom_build_dir.get()))
         except:
             raise Exception
 
@@ -466,10 +467,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=VMAP.build_poly_file, args=[tile]
+            target=vmap.build_poly_file, args=[tile]
         )
         self.working_thread.start()
 
@@ -478,10 +479,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=MESH.build_mesh, args=[tile]
+            target=mesh.build_mesh, args=[tile]
         )
         self.working_thread.start()
 
@@ -490,10 +491,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=MESH.sort_mesh, args=[tile]
+            target=mesh.sort_mesh, args=[tile]
         )
         self.working_thread.start()
 
@@ -502,10 +503,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=MESH.community_mesh, args=[tile]
+            target=mesh.community_mesh, args=[tile]
         )
         self.working_thread.start()
 
@@ -515,10 +516,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=MASK.build_masks, args=[tile, for_imagery]
+            target=mask.build_masks, args=[tile, for_imagery]
         )
         self.working_thread.start()
 
@@ -527,10 +528,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=TILE.build_tile, args=[tile]
+            target=tiles.build_tile, args=[tile]
         )
         self.working_thread.start()
 
@@ -539,10 +540,10 @@ class Ortho4XP_GUI(tk.Tk):
             tile = self.tile_from_interface()
             tile.make_dirs()
         except:
-            UI.vprint(1, "Process aborted.\n")
+            ui.vprint(1, "Process aborted.\n")
             return 0
         self.working_thread = threading.Thread(
-            target=TILE.build_all, args=[tile]
+            target=tiles.build_all, args=[tile]
         )
         self.working_thread.start()
 
@@ -561,7 +562,7 @@ class Ortho4XP_GUI(tk.Tk):
                 (lat, lon) = self.get_lat_lon()
             except:
                 return 0
-            self.config_window = CFG.Ortho4XP_Config(self)
+            self.config_window = config.Ortho4XP_Config(self)
             return 1
 
     def open_earth_window(self):
@@ -589,12 +590,13 @@ class Ortho4XP_GUI(tk.Tk):
             return 1
 
     def set_red_flag(self):
-        UI.red_flag = True
+        ui.red_flag = True
 
     def exit_prg(self):
         try:
             f = open(
-                os.path.join(FNAMES.Ortho4XP_dir, ".last_gui_params.txt"), "w"
+                os.path.join(filenames.Ortho4XP_dir, ".last_gui_params.txt"),
+                "w",
             )
             f.write(
                 self.lat.get()
@@ -634,10 +636,10 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         self.map_list = sorted(
             [
                 provider_code
-                for provider_code in set(IMG.providers_dict)
-                if IMG.providers_dict[provider_code]["in_GUI"]
+                for provider_code in set(imagery.providers_dict)
+                if imagery.providers_dict[provider_code]["in_GUI"]
             ]
-            + sorted(set(IMG.combined_providers_dict))
+            + sorted(set(imagery.combined_providers_dict))
         )
 
         self.map_list = [
@@ -775,7 +777,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         self.frame_zl_toggle_btn = tk.Frame(
             self.frame_left, border=0, bg="light green"
         )
-        for i in range(CFG.cover_zl.max - CFG.default_zl + 1):
+        for i in range(config.cover_zl.max - config.default_zl + 1):
             self.frame_zl_toggle_btn.columnconfigure(i, weight=1)
         self.frame_zl_toggle_btn.grid(
             row=row, column=0, columnspan=1, sticky=N + S + W + E
@@ -873,7 +875,10 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
 
         tk.Label(
             self.frame_left,
-            text="Ctrl+B1 : add texture\nShift+B1: add zone point\nCtrl+B2 : delete zone",
+            text=(
+                "Ctrl+B1 : add texture\nShift+B1: add zone point\nCtrl+B2 :"
+                " delete zone"
+            ),
             bg="light green",
             justify=LEFT,
         ).grid(row=row, column=0, padx=5, pady=20, sticky=N + S + E + W)
@@ -954,32 +959,32 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         self._canvas_layers = None
 
     def async_hide_banner_when_done(self):
-        if APT_SRC.AirportDataSource.cache_update_in_progress():
-            APT_SRC.AirportDataSource.wait_for_cache_update()
+        if airport_data.AirportDataSource.cache_update_in_progress():
+            airport_data.AirportDataSource.wait_for_cache_update()
         if self.apt_data_cache_banner is not None:
             self.apt_data_cache_banner.grid_remove()
 
     @staticmethod
     def async_build_map_layer(lat, lon, zl, provider):
         try:
-            result = IMG.create_tile_preview(
+            result = imagery.create_tile_preview(
                 lat=lat, lon=lon, zoomlevel=zl, provider_code=provider
             )
             if result != 1:
                 raise Exception("Couldn't create the background map image")
 
             background_map = Image.open(
-                FNAMES.preview(
+                filenames.preview(
                     lat=lat, lon=lon, zoomlevel=zl, provider_code=provider
                 )
             )
 
             # Draw the tile boundaries of the background map
-            pix_origin = GEO.tile_pix_origin(lat, lon, zl)
-            xy_top_left = GEO.latlon_to_tile_relative_pix(
+            pix_origin = geo.tile_pix_origin(lat, lon, zl)
+            xy_top_left = geo.latlon_to_tile_relative_pix(
                 pix_origin, lat + 1, lon, zl
             )
-            xy_bottom_right = GEO.latlon_to_tile_relative_pix(
+            xy_bottom_right = geo.latlon_to_tile_relative_pix(
                 pix_origin, lat, lon + 1, zl
             )
             drawer = ImageDraw.Draw(im=background_map, mode="RGBA")
@@ -995,11 +1000,11 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
     @staticmethod
     def _build_texture_layers(bg_map_lat, bg_map_lon, bg_map_zl, gtiles_dict):
         # Compute the map origin and size
-        pix_origin = GEO.tile_pix_origin(bg_map_lat, bg_map_lon, bg_map_zl)
-        til_x_min, til_y_min = GEO.wgs84_to_gtile(
+        pix_origin = geo.tile_pix_origin(bg_map_lat, bg_map_lon, bg_map_zl)
+        til_x_min, til_y_min = geo.wgs84_to_gtile(
             bg_map_lat + 1, bg_map_lon, bg_map_zl
         )
-        til_x_max, til_y_max = GEO.wgs84_to_gtile(
+        til_x_max, til_y_max = geo.wgs84_to_gtile(
             bg_map_lat, bg_map_lon + 1, bg_map_zl
         )
         size = (
@@ -1014,18 +1019,18 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             layer = Image.new(mode="RGBA", size=size)
             drawer = ImageDraw.Draw(im=layer, mode="RGBA")
             for texture_gtile in gtiles:
-                lat_max, lon_min = GEO.gtile_to_wgs84(
+                lat_max, lon_min = geo.gtile_to_wgs84(
                     texture_gtile.x, texture_gtile.y, texture_gtile.zl
                 )
-                lat_min, lon_max = GEO.gtile_to_wgs84(
+                lat_min, lon_max = geo.gtile_to_wgs84(
                     texture_gtile.x + 16,
                     texture_gtile.y + 16,
                     texture_gtile.zl,
                 )
-                xy_top_left = GEO.latlon_to_tile_relative_pix(
+                xy_top_left = geo.latlon_to_tile_relative_pix(
                     pix_origin, lat_max, lon_min, bg_map_zl
                 )
-                xy_bottom_right = GEO.latlon_to_tile_relative_pix(
+                xy_bottom_right = geo.latlon_to_tile_relative_pix(
                     pix_origin, lat_min, lon_max, bg_map_zl
                 )
                 drawer.rectangle(
@@ -1043,21 +1048,21 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         self, bg_map_lat, bg_map_lon, bg_map_zl
     ):
         try:
-            self.airport_collection = APT_SRC.AirportCollection(
-                xp_tile=APT_SRC.XPlaneTile(bg_map_lat, bg_map_lon),
+            self.airport_collection = airport_data.AirportCollection(
+                xp_tile=airport_data.XPlaneTile(bg_map_lat, bg_map_lon),
                 include_surrounding_tiles=True,
             )
 
             # Compute all the required textures for each ZL
             progressive_gtiles = collections.defaultdict(set)
             for gtile in self.airport_collection.gtiles(
-                zl=CFG.default_zl,
-                cover_zl=CFG.cover_zl,
-                screen_res=CFG.cover_screen_res,
-                fov=CFG.cover_fov,
-                fpa=CFG.cover_fpa,
-                greediness=CFG.cover_greediness,
-                greediness_threshold=CFG.cover_greediness_threshold,
+                zl=config.default_zl,
+                cover_zl=config.cover_zl,
+                screen_res=config.cover_screen_res,
+                fov=config.cover_fov,
+                fpa=config.cover_fpa,
+                greediness=config.cover_greediness,
+                greediness_threshold=config.cover_greediness_threshold,
                 xp_tile_filter=True,
             ):
                 progressive_gtiles[gtile.zl].add(gtile)
@@ -1074,7 +1079,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
     def async_build_dds_layout_layers(self, bg_map_lat, bg_map_lon, bg_map_zl):
         try:
             build_dir = os.path.normpath(
-                FNAMES.build_dir(
+                filenames.build_dir(
                     bg_map_lat,
                     bg_map_lon,
                     self.parent.custom_build_dir_entry.get(),
@@ -1094,7 +1099,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
                         "Couldn't parse the dds filename : {}".format(dds_file)
                     )
                 dds_gtiles[int(m.group("zl"))].add(
-                    APT_SRC.GTile(
+                    airport_data.GTile(
                         x=int(m.group("x")),
                         y=int(m.group("y")),
                         zl=int(m.group("zl")),
@@ -1111,7 +1116,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
     def async_build_dsf_layout_layers(self, bg_map_lat, bg_map_lon, bg_map_zl):
         try:
             build_dir = os.path.normpath(
-                FNAMES.build_dir(
+                filenames.build_dir(
                     bg_map_lat,
                     bg_map_lon,
                     self.parent.custom_build_dir_entry.get(),
@@ -1123,18 +1128,18 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
                 os.path.join(build_dir, "Earth nav data", "*", "*.dsf")
             ):
                 ter_files = list(
-                    DSF.dsf_terrain_filenames(
+                    dsf.dsf_terrain_filenames(
                         build_dir, dsf_filename, bg_map_lat, bg_map_lon
                     )
                 )
                 for ter in ter_files:
-                    x, y, zl = DSF.parse_ter_file(ter)
+                    x, y, zl = dsf.parse_ter_file(ter)
                     if (
                         common.ZoomLevels.__ZL_LOW__
                         <= zl
                         <= common.ZoomLevels.__ZL_OVERKILL__
                     ):
-                        dds_gtiles[zl].add(APT_SRC.GTile(x=x, y=y, zl=zl))
+                        dds_gtiles[zl].add(airport_data.GTile(x=x, y=y, zl=zl))
 
             return self._build_texture_layers(
                 bg_map_lat, bg_map_lon, bg_map_zl, dds_gtiles
@@ -1185,18 +1190,18 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
     def update_internal_state(self, lat, lon):
         self.zoomlevel = int(self.zl_combo.get())
         zoomlevel = self.zoomlevel
-        tilxleft, tilytop = GEO.wgs84_to_gtile(lat + 1, lon, zoomlevel)
-        self.latmax, self.lonmin = GEO.gtile_to_wgs84(
+        tilxleft, tilytop = geo.wgs84_to_gtile(lat + 1, lon, zoomlevel)
+        self.latmax, self.lonmin = geo.gtile_to_wgs84(
             tilxleft, tilytop, zoomlevel
         )
-        self.xmin, self.ymin = GEO.wgs84_to_pix(
+        self.xmin, self.ymin = geo.wgs84_to_pix(
             self.latmax, self.lonmin, zoomlevel
         )
-        tilxright, tilybot = GEO.wgs84_to_gtile(lat, lon + 1, zoomlevel)
-        self.latmin, self.lonmax = GEO.gtile_to_wgs84(
+        tilxright, tilybot = geo.wgs84_to_gtile(lat, lon + 1, zoomlevel)
+        self.latmin, self.lonmax = geo.gtile_to_wgs84(
             tilxright + 1, tilybot + 1, zoomlevel
         )
-        self.xmax, self.ymax = GEO.wgs84_to_pix(
+        self.xmax, self.ymax = geo.wgs84_to_pix(
             self.latmin, self.lonmax, zoomlevel
         )
         self.polygon_list = []
@@ -1224,7 +1229,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         self.canvas.bind("<BackSpace>", self.delLast)
 
     def apply_custom_zone_list(self):
-        for zone in CFG.zone_list:
+        for zone in config.zone_list:
             self.coords = zone[0][0:-2]
             self.zlpol.set(zone[1])
             self.zmap_combo.set(zone[2])
@@ -1253,7 +1258,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         )
 
         # Asynchronously build the texture layers
-        if CFG.cover_airports_with_highres == "Progressive":
+        if config.cover_airports_with_highres == "Progressive":
             texture_layers = self.pool.submit(
                 self.async_build_progressive_zl_layers,
                 lat,
@@ -1312,8 +1317,8 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             y=self.canvas.canvasy(event.y),
             zoomlevel=map_zl,
         )
-        (x, y) = GEO.wgs84_to_orthogrid(latp, lonp, custom_poly_zl)
-        gtile = APT_SRC.GTile(x, y, custom_poly_zl)
+        (x, y) = geo.wgs84_to_orthogrid(latp, lonp, custom_poly_zl)
+        gtile = airport_data.GTile(x, y, custom_poly_zl)
         self.last_clicked_texture.set(
             "{}_{}_{}{}.dds".format(
                 gtile.y, gtile.x, self.zmap_choice.get(), gtile.zl
@@ -1369,11 +1374,11 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
         [latp, lonp] = self.xy_to_latlon(x, y, self.zoomlevel)
-        [a, b] = GEO.wgs84_to_orthogrid(latp, lonp, self.zlpol.get())
-        [aa, bb] = GEO.wgs84_to_gtile(latp, lonp, self.zlpol.get())
+        [a, b] = geo.wgs84_to_orthogrid(latp, lonp, self.zlpol.get())
+        [aa, bb] = geo.wgs84_to_gtile(latp, lonp, self.zlpol.get())
         a = a + 16 if aa - a >= 8 else a
         b = b + 16 if bb - b >= 8 else b
-        [latp, lonp] = GEO.gtile_to_wgs84(a, b, self.zlpol.get())
+        [latp, lonp] = geo.gtile_to_wgs84(a, b, self.zlpol.get())
         self.coords += [latp, lonp]
         [x, y] = self.latlon_to_xy(latp, lonp, self.zoomlevel)
         self.points += [int(x), int(y)]
@@ -1384,9 +1389,9 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
         [latp, lonp] = self.xy_to_latlon(x, y, self.zoomlevel)
-        [a, b] = GEO.wgs84_to_orthogrid(latp, lonp, self.zlpol.get())
-        [latmax, lonmin] = GEO.gtile_to_wgs84(a, b, self.zlpol.get())
-        [latmin, lonmax] = GEO.gtile_to_wgs84(a + 16, b + 16, self.zlpol.get())
+        [a, b] = geo.wgs84_to_orthogrid(latp, lonp, self.zlpol.get())
+        [latmax, lonmin] = geo.gtile_to_wgs84(a, b, self.zlpol.get())
+        [latmin, lonmax] = geo.gtile_to_wgs84(a + 16, b + 16, self.zlpol.get())
         self.coords = [
             latmin,
             lonmin,
@@ -1414,7 +1419,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         for poly in copy:
             if poly[2] != self.zlpol.get():
                 continue
-            if VECT.point_in_polygon([x, y], poly[0]):
+            if vect.point_in_polygon([x, y], poly[0]):
                 idx = self.polygon_list.index(poly)
                 self.polygon_list.pop(idx)
                 self.canvas.delete(self.polyobj_list[idx])
@@ -1438,10 +1443,10 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
     def xy_to_latlon(self, x, y, zoomlevel):
         pix_x = x + self.xmin
         pix_y = y + self.ymin
-        return GEO.pix_to_wgs84(pix_x, pix_y, zoomlevel)
+        return geo.pix_to_wgs84(pix_x, pix_y, zoomlevel)
 
     def latlon_to_xy(self, lat, lon, zoomlevel):
-        [pix_x, pix_y] = GEO.wgs84_to_pix(lat, lon, zoomlevel)
+        [pix_x, pix_y] = geo.wgs84_to_pix(lat, lon, zoomlevel)
         return [pix_x - self.xmin, pix_y - self.ymin]
 
     def delLast(self, event):
@@ -1479,18 +1484,18 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             )
 
         if (
-            CFG.cover_airports_with_highres == "Progressive"
+            config.cover_airports_with_highres == "Progressive"
             and self.airport_collection is not None
         ):
             total_size += (
                 self.airport_collection.disk_size(
-                    zl=CFG.default_zl,
-                    cover_zl=CFG.cover_zl,
-                    screen_res=CFG.cover_screen_res,
-                    fov=CFG.cover_fov,
-                    fpa=CFG.cover_fpa,
-                    greediness=CFG.cover_greediness,
-                    greediness_threshold=CFG.cover_greediness_threshold,
+                    zl=config.default_zl,
+                    cover_zl=config.cover_zl,
+                    screen_res=config.cover_screen_res,
+                    fov=config.cover_fov,
+                    fpa=config.cover_fpa,
+                    greediness=config.cover_greediness,
+                    greediness_threshold=config.cover_greediness_threshold,
                 )
                 / 2 ** 30
             )
@@ -1518,20 +1523,20 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             lon_bar = (polygon[1][1] + polygon[1][3]) / 2
             zoomlevel = int(polygon[2])
             provider_code = polygon[3]
-            til_x_left, til_y_top = GEO.wgs84_to_orthogrid(
+            til_x_left, til_y_top = geo.wgs84_to_orthogrid(
                 lat_bar, lon_bar, zoomlevel
             )
             texture_attributes_list.append(
                 (til_x_left, til_y_top, zoomlevel, provider_code)
             )
             fake_zone_list.append(("", "", provider_code))
-        UI.vprint(1, "\nBuilding geotiffs.\n------------------\n")
-        tile = CFG.Tile(self.lat, self.lon, "")
+        ui.vprint(1, "\nBuilding geotiffs.\n------------------\n")
+        tile = config.Tile(self.lat, self.lon, "")
         tile.zone_list = fake_zone_list
-        IMG.initialize_local_combined_providers_dict(tile)
+        imagery.initialize_local_combined_providers_dict(tile)
         fargs_build_geotiffs = [tile, texture_attributes_list]
         build_geotiffs_thread = threading.Thread(
-            target=IMG.build_geotiffs, args=fargs_build_geotiffs
+            target=imagery.build_geotiffs, args=fargs_build_geotiffs
         )
         build_geotiffs_thread.start()
         return
@@ -1542,19 +1547,21 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
         lon_bar = (polygon[1][1] + polygon[1][3]) / 2
         zoomlevel = int(polygon[2])
         provider_code = polygon[3]
-        til_x_left, til_y_top = GEO.wgs84_to_orthogrid(
+        til_x_left, til_y_top = geo.wgs84_to_orthogrid(
             lat_bar, lon_bar, zoomlevel
         )
-        build_dir = FNAMES.build_dir(
+        build_dir = filenames.build_dir(
             self.lat, self.lon, self.parent.custom_build_dir.get()
         )
-        mesh_file = FNAMES.mesh_file(build_dir, self.lat, self.lon)
-        UI.vprint(
+        mesh_file = filenames.mesh_file(build_dir, self.lat, self.lon)
+        ui.vprint(
             1,
             "Extracting part of ",
             mesh_file,
             "to",
-            FNAMES.obj_file(til_x_left, til_y_top, zoomlevel, provider_code),
+            filenames.obj_file(
+                til_x_left, til_y_top, zoomlevel, provider_code
+            ),
             "(Wavefront)",
         )
         fargs_extract_mesh = [
@@ -1565,7 +1572,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             provider_code,
         ]
         extract_mesh_thread = threading.Thread(
-            target=MESH.extract_mesh_to_obj, args=fargs_extract_mesh
+            target=mesh.extract_mesh_to_obj, args=fargs_extract_mesh
         )
         extract_mesh_thread.start()
         return
@@ -1600,7 +1607,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
             ]:  # repeat first point for point_in_polygon algo
                 tmp.append(pt)
             zone_list.append([tmp, item[2], item[3]])
-        CFG.zone_list = zone_list
+        config.zone_list = zone_list
         # self.destroy()
         return
 
@@ -1749,7 +1756,11 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
         row += 1
         tk.Label(
             self.frame_left,
-            text="Shortcuts :\n-----------------\nB2-press+hold=move map\nB1-double-click=select active\nShift+B1=add to batch build\nCtrl+B1=link in Custom Scenery",
+            text=(
+                "Shortcuts :\n-----------------\nB2-press+hold=move"
+                " map\nB1-double-click=select active\nShift+B1=add to batch"
+                " build\nCtrl+B1=link in Custom Scenery"
+            ),
             bg="light green",
         ).grid(row=row, column=0, padx=0, pady=5, sticky=N + S + E + W)
         row += 1
@@ -1765,7 +1776,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                 2 ** self.earthzl * 256 - 1,
             )
         )  # self.canvas.bbox(ALL))
-        (x0, y0) = GEO.wgs84_to_pix(lat + 0.5, lon + 0.5, self.earthzl)
+        (x0, y0) = geo.wgs84_to_pix(lat + 0.5, lon + 0.5, self.earthzl)
         x0 = max(1, x0 - self.canvas_min_x / 2)
         y0 = max(1, y0 - self.canvas_min_y / 2)
         self.canvas.xview_moveto(x0 / self.resolution)
@@ -1785,11 +1796,13 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
         self.draw_canvas(self.nx0, self.ny0)
         self.active_lat = lat
         self.active_lon = lon
-        self.latlon.set(FNAMES.short_latlon(self.active_lat, self.active_lon))
-        [x0, y0] = GEO.wgs84_to_pix(
+        self.latlon.set(
+            filenames.short_latlon(self.active_lat, self.active_lon)
+        )
+        [x0, y0] = geo.wgs84_to_pix(
             self.active_lat + 1, self.active_lon, self.earthzl
         )
-        [x1, y1] = GEO.wgs84_to_pix(
+        [x1, y1] = geo.wgs84_to_pix(
             self.active_lat, self.active_lon + 1, self.earthzl
         )
         self.active_tile = self.canvas.create_rectangle(
@@ -1804,7 +1817,9 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.custom_build_dir and self.custom_build_dir[-1] != "/"
         )
         self.working_dir = (
-            self.custom_build_dir if self.custom_build_dir else FNAMES.Tile_dir
+            self.custom_build_dir
+            if self.custom_build_dir
+            else filenames.Tile_dir
         )
 
     def refresh(self):
@@ -1832,14 +1847,14 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                     # With the enlarged accepetance rule for directory name there might be more than one tile for the same (lat,lon), we skip all but the first encountered.
                     if (lat, lon) in self.dico_tiles_done:
                         continue
-                    [x0, y0] = GEO.wgs84_to_pix(lat + 1, lon, self.earthzl)
-                    [x1, y1] = GEO.wgs84_to_pix(lat, lon + 1, self.earthzl)
+                    [x0, y0] = geo.wgs84_to_pix(lat + 1, lon, self.earthzl)
+                    [x1, y1] = geo.wgs84_to_pix(lat, lon + 1, self.earthzl)
                     if os.path.isfile(
                         os.path.join(
                             self.working_dir,
                             dir_name,
                             "Earth nav data",
-                            FNAMES.long_latlon(lat, lon) + ".dsf",
+                            filenames.long_latlon(lat, lon) + ".dsf",
                         )
                     ):
                         color = "blue"
@@ -1850,7 +1865,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                                     self.working_dir,
                                     dir_name,
                                     "Ortho4XP_"
-                                    + FNAMES.short_latlon(lat, lon)
+                                    + filenames.short_latlon(lat, lon)
                                     + ".cfg",
                                 ),
                                 "r",
@@ -1906,9 +1921,9 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                             dir_name,
                         )
                         link = os.path.join(
-                            CFG.xplane_install_dir,
+                            config.xplane_install_dir,
                             "Custom Scenery",
-                            "zOrtho4XP_" + FNAMES.short_latlon(lat, lon),
+                            "zOrtho4XP_" + filenames.short_latlon(lat, lon),
                         )
                         if os.path.isdir(link):
                             if os.path.samefile(
@@ -1945,8 +1960,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                         lon = int(file_name[3:7])
                     except:
                         continue
-                    [x0, y0] = GEO.wgs84_to_pix(lat + 1, lon, self.earthzl)
-                    [x1, y1] = GEO.wgs84_to_pix(lat, lon + 1, self.earthzl)
+                    [x0, y0] = geo.wgs84_to_pix(lat + 1, lon, self.earthzl)
+                    [x1, y1] = geo.wgs84_to_pix(lat, lon + 1, self.earthzl)
                     color = "blue"
                     content = ""
                     try:
@@ -1954,7 +1969,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                             os.path.join(
                                 self.working_dir,
                                 "Ortho4XP_"
-                                + FNAMES.short_latlon(lat, lon)
+                                + filenames.short_latlon(lat, lon)
                                 + ".cfg",
                             ),
                             "r",
@@ -2000,7 +2015,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                     )
 
             link = os.path.join(
-                CFG.xplane_install_dir,
+                config.xplane_install_dir,
                 "Custom Scenery",
                 "zOrtho4XP_" + os.path.basename(self.working_dir),
             )
@@ -2020,8 +2035,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                                 font=("Helvetica", "12", "bold underline"),
                             )
         for (lat, lon) in self.dico_tiles_todo:
-            [x0, y0] = GEO.wgs84_to_pix(lat + 1, lon, self.earthzl)
-            [x1, y1] = GEO.wgs84_to_pix(lat, lon + 1, self.earthzl)
+            [x0, y0] = geo.wgs84_to_pix(lat + 1, lon, self.earthzl)
+            [x1, y1] = geo.wgs84_to_pix(lat, lon + 1, self.earthzl)
             self.canvas.delete(self.dico_tiles_todo[(lat, lon)])
             self.dico_tiles_todo[(lat, lon)] = (
                 self.canvas.create_rectangle(
@@ -2037,40 +2052,44 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
     def trash(self):
         if self.v_["OSM data"].get():
             try:
-                shutil.rmtree(FNAMES.osm_dir(self.active_lat, self.active_lon))
+                shutil.rmtree(
+                    filenames.osm_dir(self.active_lat, self.active_lon)
+                )
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
         if self.v_["X-Plane Airport data"].get():
             try:
-                APT_SRC.AirportDataSource.update_cache(force_rebuild=True)
+                airport_data.AirportDataSource.update_cache(force_rebuild=True)
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
         if self.v_["Mask data"].get():
             try:
                 shutil.rmtree(
-                    FNAMES.mask_dir(self.active_lat, self.active_lon)
+                    filenames.mask_dir(self.active_lat, self.active_lon)
                 )
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
         if self.v_["Jpeg imagery"].get():
             try:
                 shutil.rmtree(
                     os.path.join(
-                        FNAMES.Imagery_dir,
-                        FNAMES.long_latlon(self.active_lat, self.active_lon),
+                        filenames.Imagery_dir,
+                        filenames.long_latlon(
+                            self.active_lat, self.active_lon
+                        ),
                     )
                 )
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
         if self.v_["Tile (whole)"].get() and not self.grouped:
             try:
                 shutil.rmtree(
-                    FNAMES.build_dir(
+                    filenames.build_dir(
                         self.active_lat, self.active_lon, self.custom_build_dir
                     )
                 )
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
             if (self.active_lat, self.active_lon) in self.dico_tiles_done:
                 for objid in self.dico_tiles_done[
                     (self.active_lat, self.active_lon)
@@ -2081,7 +2100,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             try:
                 shutil.rmtree(
                     os.path.join(
-                        FNAMES.build_dir(
+                        filenames.build_dir(
                             self.active_lat,
                             self.active_lon,
                             self.custom_build_dir,
@@ -2090,22 +2109,22 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                     )
                 )
             except Exception as e:
-                UI.vprint(3, e)
+                ui.vprint(3, e)
         return
 
     def select_tile(self, event):
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
-        (lat, lon) = [floor(t) for t in GEO.pix_to_wgs84(x, y, self.earthzl)]
+        (lat, lon) = [floor(t) for t in geo.pix_to_wgs84(x, y, self.earthzl)]
         self.active_lat = lat
         self.active_lon = lon
-        self.latlon.set(FNAMES.short_latlon(lat, lon))
+        self.latlon.set(filenames.short_latlon(lat, lon))
         try:
             self.canvas.delete(self.active_tile)
         except:
             pass
-        [x0, y0] = GEO.wgs84_to_pix(lat + 1, lon, self.earthzl)
-        [x1, y1] = GEO.wgs84_to_pix(lat, lon + 1, self.earthzl)
+        [x0, y0] = geo.wgs84_to_pix(lat + 1, lon, self.earthzl)
+        [x1, y1] = geo.wgs84_to_pix(lat, lon + 1, self.earthzl)
         self.active_tile = self.canvas.create_rectangle(
             x0, y0, x1, y1, fill="", outline="yellow", width=3
         )
@@ -2116,14 +2135,14 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
     def toggle_to_custom(self, event):
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
-        (lat, lon) = [floor(t) for t in GEO.pix_to_wgs84(x, y, self.earthzl)]
+        (lat, lon) = [floor(t) for t in geo.pix_to_wgs84(x, y, self.earthzl)]
         if (lat, lon) not in self.dico_tiles_done:
             return
         if not self.grouped:
             link = os.path.join(
-                CFG.xplane_install_dir,
+                config.xplane_install_dir,
                 "Custom Scenery",
-                "zOrtho4XP_" + FNAMES.short_latlon(lat, lon),
+                "zOrtho4XP_" + filenames.short_latlon(lat, lon),
             )
             # target=os.path.realpath(os.path.join(self.working_dir,'zOrtho4XP_'+FNAMES.short_latlon(lat,lon)))
             target = os.path.realpath(
@@ -2147,7 +2166,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
                 return
         elif self.grouped:
             link = os.path.join(
-                CFG.xplane_install_dir,
+                config.xplane_install_dir,
                 "Custom Scenery",
                 "zOrtho4XP_" + os.path.basename(self.working_dir),
             )
@@ -2205,10 +2224,10 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
     def add_tile(self, event):
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
-        (lat, lon) = [floor(t) for t in GEO.pix_to_wgs84(x, y, self.earthzl)]
+        (lat, lon) = [floor(t) for t in geo.pix_to_wgs84(x, y, self.earthzl)]
         if (lat, lon) not in self.dico_tiles_todo:
-            [x0, y0] = GEO.wgs84_to_pix(lat + 1, lon, self.earthzl)
-            [x1, y1] = GEO.wgs84_to_pix(lat, lon + 1, self.earthzl)
+            [x0, y0] = geo.wgs84_to_pix(lat + 1, lon, self.earthzl)
+            [x1, y1] = geo.wgs84_to_pix(lat, lon + 1, self.earthzl)
             if not OsX:
                 self.dico_tiles_todo[
                     (lat, lon)
@@ -2232,7 +2251,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             return
         (lat, lon) = list_lat_lon[0]
         try:
-            tile = CFG.Tile(lat, lon, self.custom_build_dir)
+            tile = config.Tile(lat, lon, self.custom_build_dir)
         except:
             return 0
         args = [
@@ -2245,7 +2264,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.v_["Extract overlays"].get(),
             self.v_["Read per tile cfg"].get(),
         ]
-        threading.Thread(target=TILE.build_tile_list, args=args).start()
+        threading.Thread(target=tiles.build_tile_list, args=args).start()
         return
 
     def scroll_start(self, event):
@@ -2296,7 +2315,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
 
     def draw_canvas(self, nx0, ny0):
         fileprefix = os.path.join(
-            FNAMES.Utils_dir, "Earth", "Earth2_ZL" + str(self.earthzl) + "_"
+            filenames.Utils_dir, "Earth", "Earth2_ZL" + str(self.earthzl) + "_"
         )
         filepreviewNW = fileprefix + str(nx0) + "_" + str(ny0) + ".jpg"
         try:
@@ -2310,7 +2329,7 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             )
             self.canvas.tag_lower(self.canv_imgNW)
         except:
-            UI.lvprint(
+            ui.lvprint(
                 0,
                 "Could not find Earth preview file",
                 filepreviewNW,

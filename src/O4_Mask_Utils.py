@@ -7,14 +7,13 @@ from math import atan, ceil, floor
 import numpy
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
-from . import O4_DEM_Utils as DEM
-from . import filenames as FNAMES
-from . import geo as GEO
-from . import O4_Imagery_Utils as IMG
-from . import O4_Mesh_Utils as MESH
-from . import O4_OSM_Utils as OSM
-from . import O4_UI_Utils as UI
-from . import O4_Vector_Utils as VECT
+from . import O4_DEM_Utils as dem
+from . import O4_Imagery_Utils as imagery
+from . import O4_Mesh_Utils as mesh
+from . import O4_OSM_Utils as osm
+from . import O4_UI_Utils as ui
+from . import O4_Vector_Utils as vect
+from . import filenames, geo
 from .O4_Parallel_Utils import parallel_execute
 
 mask_altitude_above = 0.5
@@ -29,8 +28,8 @@ def needs_mask(tile, til_x_left, til_y_top, zoomlevel, *args):
     rx = int((til_x_left - factor * m_til_x) / 16)
     ry = int((til_y_top - factor * m_til_y) / 16)
     mask_file = os.path.join(
-        FNAMES.mask_dir(tile.lat, tile.lon),
-        FNAMES.legacy_mask(m_til_x, m_til_y),
+        filenames.mask_dir(tile.lat, tile.lon),
+        filenames.legacy_mask(m_til_x, m_til_y),
     )
     if not os.path.isfile(mask_file):
         return False
@@ -51,11 +50,11 @@ def needs_mask(tile, til_x_left, til_y_top, zoomlevel, *args):
 
 ##############################################################################
 def build_masks(tile, for_imagery=False):
-    if UI.is_working:
+    if ui.is_working:
         return 0
-    UI.is_working = 1
+    ui.is_working = 1
     # Which grey level for inland water equivalent ?
-    im = Image.open(os.path.join(FNAMES.Utils_dir, "water_transition.png"))
+    im = Image.open(os.path.join(filenames.Utils_dir, "water_transition.png"))
     sea_level = im.getpixel((0, 127 * (1 - min(1, 0.1 + tile.ratio_water))))
     del im
     ##########################################
@@ -68,33 +67,33 @@ def build_masks(tile, for_imagery=False):
             return 2 * ratio - ratio ** 2
 
     ##########################################
-    UI.red_flag = False
-    UI.logprint(
+    ui.red_flag = False
+    ui.logprint(
         "Step 2.5 for tile lat=", tile.lat, ", lon=", tile.lon, ": starting."
     )
-    UI.vprint(
+    ui.vprint(
         0,
         "\nStep 2.5 : Building masks for tile "
-        + FNAMES.short_latlon(tile.lat, tile.lon)
+        + filenames.short_latlon(tile.lat, tile.lon)
         + " : \n--------\n",
     )
     timer = time.time()
     if not os.path.exists(
-        FNAMES.mesh_file(tile.build_dir, tile.lat, tile.lon)
+        filenames.mesh_file(tile.build_dir, tile.lat, tile.lon)
     ):
-        UI.lvprint(
+        ui.lvprint(
             0,
             "ERROR: Mesh file ",
-            FNAMES.mesh_file(tile.build_dir, tile.lat, tile.lon),
+            filenames.mesh_file(tile.build_dir, tile.lat, tile.lon),
             "absent.",
         )
-        UI.exit_message_and_bottom_line("")
+        ui.exit_message_and_bottom_line("")
         return 0
     dest_dir = (
-        FNAMES.mask_dir(tile.lat, tile.lon)
+        filenames.mask_dir(tile.lat, tile.lon)
         if not for_imagery
         else os.path.join(
-            FNAMES.mask_dir(tile.lat, tile.lon), "Combined_imagery"
+            filenames.mask_dir(tile.lat, tile.lon), "Combined_imagery"
         )
     )
     if not os.path.exists(dest_dir):
@@ -106,11 +105,11 @@ def build_masks(tile, for_imagery=False):
                 tile.build_dir
                 if tile.grouped
                 else tile.build_dir.replace(
-                    FNAMES.tile_dir(tile.lat, tile.lon),
-                    FNAMES.tile_dir(close_lat, close_lon),
+                    filenames.tile_dir(tile.lat, tile.lon),
+                    filenames.tile_dir(close_lat, close_lon),
                 )
             )
-            close_mesh_file_name = FNAMES.mesh_file(
+            close_mesh_file_name = filenames.mesh_file(
                 close_build_dir, close_lat, close_lon
             )
             if os.path.isfile(close_mesh_file_name):
@@ -119,28 +118,28 @@ def build_masks(tile, for_imagery=False):
     dico_masks = {}
     dico_masks_inland = {}
     ####################
-    [til_x_min, til_y_min] = GEO.wgs84_to_orthogrid(
+    [til_x_min, til_y_min] = geo.wgs84_to_orthogrid(
         tile.lat + 1, tile.lon, tile.mask_zl
     )
-    [til_x_max, til_y_max] = GEO.wgs84_to_orthogrid(
+    [til_x_max, til_y_max] = geo.wgs84_to_orthogrid(
         tile.lat, tile.lon + 1, tile.mask_zl
     )
-    UI.vprint(1, "-> Deleting existing masks")
+    ui.vprint(1, "-> Deleting existing masks")
     for til_x in range(til_x_min, til_x_max + 1, 16):
         for til_y in range(til_y_min, til_y_max + 1, 16):
             try:
                 os.remove(
-                    os.path.join(dest_dir, FNAMES.legacy_mask(til_x, til_y))
+                    os.path.join(dest_dir, filenames.legacy_mask(til_x, til_y))
                 )
             except:
                 pass
-    UI.vprint(1, "-> Reading mesh data")
+    ui.vprint(1, "-> Reading mesh data")
     for mesh_file_name in mesh_file_name_list:
         try:
             f_mesh = open(mesh_file_name, "r")
-            UI.vprint(1, "   * ", mesh_file_name)
+            ui.vprint(1, "   * ", mesh_file_name)
         except:
-            UI.lvprint(
+            ui.lvprint(
                 1, "Mesh file ", mesh_file_name, " could not be read. Skipped."
             )
             continue
@@ -165,7 +164,7 @@ def build_masks(tile, for_imagery=False):
         nbr_tri_in = int(f_mesh.readline())  # read nbr of tris
         step_stones = nbr_tri_in // 100
         percent = -1
-        UI.vprint(
+        ui.vprint(
             2,
             " Attribution process of masks buffers to water triangles for "
             + str(mesh_file_name)
@@ -174,9 +173,9 @@ def build_masks(tile, for_imagery=False):
         for i in range(0, nbr_tri_in):
             if i % step_stones == 0:
                 percent += 1
-                UI.progress_bar(1, int(percent * 5 / 10))
-                if UI.red_flag:
-                    UI.exit_message_and_bottom_line()
+                ui.progress_bar(1, int(percent * 5 / 10))
+                if ui.red_flag:
+                    ui.exit_message_and_bottom_line()
                     return 0
             (n1, n2, n3, tri_type) = [
                 int(x) - 1 for x in f_mesh.readline().split()[:4]
@@ -196,7 +195,7 @@ def build_masks(tile, for_imagery=False):
             (lon3, lat3) = pt_in[5 * n3 : 5 * n3 + 2]
             bary_lat = (lat1 + lat2 + lat3) / 3
             bary_lon = (lon1 + lon2 + lon3) / 3
-            (til_x, til_y) = GEO.wgs84_to_orthogrid(
+            (til_x, til_y) = geo.wgs84_to_orthogrid(
                 bary_lat, bary_lon, tile.mask_zl
             )
             if (
@@ -206,7 +205,7 @@ def build_masks(tile, for_imagery=False):
                 or til_y > til_y_max + 16
             ):
                 continue
-            (til_x2, til_y2) = GEO.wgs84_to_orthogrid(
+            (til_x2, til_y2) = geo.wgs84_to_orthogrid(
                 bary_lat, bary_lon, tile.mask_zl + 2
             )
             a = (til_x2 // 16) % 4
@@ -293,7 +292,7 @@ def build_masks(tile, for_imagery=False):
                     ]
         f_mesh.close()
         if not tile.use_masks_for_inland:
-            UI.vprint(2, "   Taking care of inland water near shoreline")
+            ui.vprint(2, "   Taking care of inland water near shoreline")
             f_mesh = open(mesh_file_name, "r")
             for i in range(0, 4):
                 f_mesh.readline()
@@ -306,9 +305,9 @@ def build_masks(tile, for_imagery=False):
             for i in range(0, nbr_tri_in):
                 if i % step_stones == 0:
                     percent += 1
-                    UI.progress_bar(1, int(percent * 5 / 10))
-                    if UI.red_flag:
-                        UI.exit_message_and_bottom_line()
+                    ui.progress_bar(1, int(percent * 5 / 10))
+                    if ui.red_flag:
+                        ui.exit_message_and_bottom_line()
                         return 0
                 (n1, n2, n3, tri_type) = [
                     int(x) - 1 for x in f_mesh.readline().split()[:4]
@@ -321,7 +320,7 @@ def build_masks(tile, for_imagery=False):
                 (lon3, lat3) = pt_in[5 * n3 : 5 * n3 + 2]
                 bary_lat = (lat1 + lat2 + lat3) / 3
                 bary_lon = (lon1 + lon2 + lon3) / 3
-                (til_x, til_y) = GEO.wgs84_to_orthogrid(
+                (til_x, til_y) = geo.wgs84_to_orthogrid(
                     bary_lat, bary_lon, tile.mask_zl
                 )
                 if (
@@ -331,7 +330,7 @@ def build_masks(tile, for_imagery=False):
                     or til_y > til_y_max + 16
                 ):
                     continue
-                (til_x2, til_y2) = GEO.wgs84_to_orthogrid(
+                (til_x2, til_y2) = geo.wgs84_to_orthogrid(
                     bary_lat, bary_lon, tile.mask_zl + 2
                 )
                 a = (til_x2 // 16) % 4
@@ -347,19 +346,20 @@ def build_masks(tile, for_imagery=False):
                             (lat1, lon1, lat2, lon2, lat3, lon3)
                         ]
             f_mesh.close()
-    UI.vprint(1, "-> Construction of the masks")
+    ui.vprint(1, "-> Construction of the masks")
     if tile.masks_use_DEM_too:
         try:
             fill_nodata = tile.fill_nodata or "to zero"
             source = (
                 (";" in tile.custom_dem) and tile.custom_dem.split(";")[0]
             ) or tile.custom_dem
-            tile.dem = DEM.DEM(
+            tile.dem = dem.DEM(
                 tile.lat, tile.lon, source, fill_nodata, info_only=False
             )
         except:
-            UI.exit_message_and_bottom_line(
-                "\nERROR: Could not determine the appropriate eleva(tion source. Please check your custom_dem entry."
+            ui.exit_message_and_bottom_line(
+                "\nERROR: Could not determine the appropriate eleva(tion"
+                " source. Please check your custom_dem entry."
             )
             return 0
 
@@ -376,8 +376,8 @@ def build_masks(tile, for_imagery=False):
             or til_y > til_y_max
         ):
             return 1
-        (latm0, lonm0) = GEO.gtile_to_wgs84(til_x, til_y, tile.mask_zl)
-        (px0, py0) = GEO.wgs84_to_pix(latm0, lonm0, tile.mask_zl)
+        (latm0, lonm0) = geo.gtile_to_wgs84(til_x, til_y, tile.mask_zl)
+        (px0, py0) = geo.wgs84_to_pix(latm0, lonm0, tile.mask_zl)
         px0 -= 1024
         py0 -= 1024
         # 1) We start with a black mask
@@ -388,12 +388,12 @@ def build_masks(tile, for_imagery=False):
             latlonstr = mesh_file_name.split(".mes")[-2][-7:]
             lathere = int(latlonstr[0:3])
             lonhere = int(latlonstr[3:7])
-            (px1, py1) = GEO.wgs84_to_pix(lathere, lonhere, tile.mask_zl)
-            (px2, py2) = GEO.wgs84_to_pix(lathere, lonhere + 1, tile.mask_zl)
-            (px3, py3) = GEO.wgs84_to_pix(
+            (px1, py1) = geo.wgs84_to_pix(lathere, lonhere, tile.mask_zl)
+            (px2, py2) = geo.wgs84_to_pix(lathere, lonhere + 1, tile.mask_zl)
+            (px3, py3) = geo.wgs84_to_pix(
                 lathere + 1, lonhere + 1, tile.mask_zl
             )
-            (px4, py4) = GEO.wgs84_to_pix(lathere + 1, lonhere, tile.mask_zl)
+            (px4, py4) = geo.wgs84_to_pix(lathere + 1, lonhere, tile.mask_zl)
             px1 -= px0
             px2 -= px0
             px3 -= px0
@@ -410,9 +410,9 @@ def build_masks(tile, for_imagery=False):
             for (lat1, lon1, lat2, lon2, lat3, lon3) in dico_masks_inland[
                 (til_x, til_y)
             ]:
-                (px1, py1) = GEO.wgs84_to_pix(lat1, lon1, tile.mask_zl)
-                (px2, py2) = GEO.wgs84_to_pix(lat2, lon2, tile.mask_zl)
-                (px3, py3) = GEO.wgs84_to_pix(lat3, lon3, tile.mask_zl)
+                (px1, py1) = geo.wgs84_to_pix(lat1, lon1, tile.mask_zl)
+                (px2, py2) = geo.wgs84_to_pix(lat2, lon2, tile.mask_zl)
+                (px3, py3) = geo.wgs84_to_pix(lat3, lon3, tile.mask_zl)
                 px1 -= px0
                 px2 -= px0
                 px3 -= px0
@@ -424,9 +424,9 @@ def build_masks(tile, for_imagery=False):
                 )  # int(255*(1-tile.ratio_water)))
         # 3b) We overwrite the white + grey part of the mask with black where sea water was detected in the first part above
         for (lat1, lon1, lat2, lon2, lat3, lon3) in dico_masks[(til_x, til_y)]:
-            (px1, py1) = GEO.wgs84_to_pix(lat1, lon1, tile.mask_zl)
-            (px2, py2) = GEO.wgs84_to_pix(lat2, lon2, tile.mask_zl)
-            (px3, py3) = GEO.wgs84_to_pix(lat3, lon3, tile.mask_zl)
+            (px1, py1) = geo.wgs84_to_pix(lat1, lon1, tile.mask_zl)
+            (px2, py2) = geo.wgs84_to_pix(lat2, lon2, tile.mask_zl)
+            (px3, py3) = geo.wgs84_to_pix(lat3, lon3, tile.mask_zl)
             px1 -= px0
             px2 -= px0
             px3 -= px0
@@ -442,12 +442,12 @@ def build_masks(tile, for_imagery=False):
 
         if tile.masks_use_DEM_too:
             # computing the part of the mask coming from the DEM:
-            (latmax, lonmin) = GEO.pix_to_wgs84(px0, py0, tile.mask_zl)
-            (latmin, lonmax) = GEO.pix_to_wgs84(
+            (latmax, lonmin) = geo.pix_to_wgs84(px0, py0, tile.mask_zl)
+            (latmin, lonmax) = geo.pix_to_wgs84(
                 px0 + 6144, py0 + 6144, tile.mask_zl
             )
-            (x03857, y03857) = GEO.transform("4326", "3857", lonmin, latmax)
-            (x13857, y13857) = GEO.transform("4326", "3857", lonmax, latmin)
+            (x03857, y03857) = geo.transform("4326", "3857", lonmin, latmax)
+            (x13857, y13857) = geo.transform("4326", "3857", lonmax, latmin)
             (
                 (lonmin, lonmax, latmin, latmax),
                 demarr4326,
@@ -461,7 +461,7 @@ def build_masks(tile, for_imagery=False):
                 del demarr4326
                 s_bbox = (lonmin, latmax, lonmax, latmin)
                 t_bbox = (x03857, y03857, x13857, y13857)
-                demim3857 = IMG.gdalwarp_alternative(
+                demim3857 = imagery.gdalwarp_alternative(
                     s_bbox, "4326", demim4326, t_bbox, "3857", (6144, 6144)
                 )
                 demim3857 = demim3857.filter(
@@ -476,11 +476,11 @@ def build_masks(tile, for_imagery=False):
 
         custom_mask_array = numpy.zeros((4096, 4096), dtype=numpy.uint8)
         if tile.masks_custom_extent:
-            (latm1, lonm1) = GEO.gtile_to_wgs84(
+            (latm1, lonm1) = geo.gtile_to_wgs84(
                 til_x + 16, til_y + 16, tile.mask_zl
             )
             bbox_4326 = (lonm0, latm0, lonm1, latm1)
-            masks_im = IMG.has_data(
+            masks_im = imagery.has_data(
                 bbox_4326,
                 tile.masks_custom_extent,
                 True,
@@ -497,12 +497,12 @@ def build_masks(tile, for_imagery=False):
         if (img_array.max() == 0) and (
             custom_mask_array.max() == 0
         ):  # no need to test if the mask is all white since it would otherwise not be present in dico_mask
-            UI.vprint(1, "   Skipping", FNAMES.legacy_mask(til_x, til_y))
+            ui.vprint(1, "   Skipping", filenames.legacy_mask(til_x, til_y))
             return 1
         else:
-            UI.vprint(1, "   Creating", FNAMES.legacy_mask(til_x, til_y))
+            ui.vprint(1, "   Creating", filenames.legacy_mask(til_x, til_y))
         # Blur of the mask
-        pxscal = GEO.webmercator_pixel_size(tile.lat + 0.5, tile.mask_zl)
+        pxscal = geo.webmercator_pixel_size(tile.lat + 0.5, tile.mask_zl)
         if tile.masking_mode == "sand":
             blur_width = int(tile.masks_width / pxscal)
         elif tile.masking_mode == "rocks":
@@ -598,7 +598,7 @@ def build_masks(tile, for_imagery=False):
                     > 0
                 ).astype(numpy.uint8) * 255
                 b_img_array[(b_img_array == 0) * (b_mask_array != 0)] = value
-                UI.vprint(2, value)
+                ui.vprint(2, value)
             # Next the intermediate zone at constant transparency
             sea_b_radius = midzone / 3
             sea_b_radius_buffered = (midzone + transout) / 3
@@ -642,7 +642,7 @@ def build_masks(tile, for_imagery=False):
                     > 0
                 ).astype(numpy.uint8) * 255
                 b_img_array[(b_img_array == 0) * (b_mask_array != 0)] = value
-                UI.vprint(2, value)
+                ui.vprint(2, value)
             # To smoothen the thresolding introduced above we do a global short extent gaussian blur
             b_img_array = numpy.array(
                 Image.fromarray(b_img_array)
@@ -666,19 +666,19 @@ def build_masks(tile, for_imagery=False):
                 img_array
             )  # .filter(ImageFilter.GaussianBlur(3))
             masks_im.save(
-                os.path.join(dest_dir, FNAMES.legacy_mask(til_x, til_y))
+                os.path.join(dest_dir, filenames.legacy_mask(til_x, til_y))
             )
-            UI.vprint(2, "     Done.")
+            ui.vprint(2, "     Done.")
         else:
-            UI.vprint(1, "     Ends-up being discarded.")
+            ui.vprint(1, "     Ends-up being discarded.")
         return 1
 
     parallel_execute(
         build_mask, masks_queue, masks_build_slots, progress=dico_progress
     )
-    UI.progress_bar(1, 100)
-    UI.timings_and_bottom_line(timer)
-    UI.logprint(
+    ui.progress_bar(1, 100)
+    ui.timings_and_bottom_line(timer)
+    ui.logprint(
         "Step 2.5 for tile lat=",
         tile.lat,
         ", lon=",
@@ -755,12 +755,18 @@ def triangulation_to_image(name, pixel_size, grid_size_or_bbox):
 ##############################################################################
 
 if __name__ == "__main__":
-    UI.log = False
-    UI.verbosity = 2
-    Syntax = 'Syntax :\n--------\n(PYTHON) extent_code  pixel_size buffer_size blur_size [OSM query] [EPSG code] [bbox_or_grid_size]\nAll three sizes in meters, \
-            buffer_size can be negative too.\nIf OSM query is not used, data must be cached in an extent_code.osm.bz2 file. EPSG code defaults \
-            to 4326, if it is used the OSM query needs to be used too.\n\nExample :(from a subdirectory of Extents)\
-            \n---------\npython3 ../../src/O4_Mask_Utils.py Suisse  20 0 400 rel["admin_level"="2"]["name:fr"="Suisse"]'
+    ui.log = False
+    ui.verbosity = 2
+    Syntax = (
+        "Syntax :\n--------\n(PYTHON) extent_code  pixel_size buffer_size"
+        " blur_size [OSM query] [EPSG code] [bbox_or_grid_size]\nAll three"
+        " sizes in meters,             buffer_size can be negative too.\nIf"
+        " OSM query is not used, data must be cached in an extent_code.osm.bz2"
+        " file. EPSG code defaults             to 4326, if it is used the OSM"
+        " query needs to be used too.\n\nExample :(from a subdirectory of"
+        " Extents)            \n---------\npython3 ../../src/O4_Mask_Utils.py"
+        ' Suisse  20 0 400 rel["admin_level"="2"]["name:fr"="Suisse"]'
+    )
     nargs = len(sys.argv)
     if not nargs in (5, 6, 7, 8):
         print(Syntax)
@@ -798,11 +804,11 @@ if __name__ == "__main__":
     pixel_size = (
         pixel_size / 111120 if epsg_code == "4326" else pixel_size
     )  # assuming meters if not degrees
-    vector_map = VECT.Vector_Map()
-    osm_layer = OSM.OSM_layer()
+    vector_map = vect.Vector_Map()
+    osm_layer = osm.OSM_layer()
     if not os.path.exists(cached_file_name):
         print("OSM query...")
-        if not OSM.OSM_query_to_OSM_layer(
+        if not osm.OSM_query_to_OSM_layer(
             query, "", osm_layer, "all", cached_file_name=cached_file_name
         ):
             print("OSM query failed. Exiting.")
@@ -813,13 +819,14 @@ if __name__ == "__main__":
         print("Recycling OSM file...")
         osm_layer.update_dicosm(cached_file_name, None)
     print("Transform to multipolygon...")
-    multipolygon_area = OSM.OSM_to_MultiPolygon(osm_layer, 0, 0)
+    multipolygon_area = osm.OSM_to_MultiPolygon(osm_layer, 0, 0)
     del osm_layer
     if not multipolygon_area.area:
         # try: os.remove(cached_file_name)
         # except: pass
         print(
-            "Humm... an empty response. Are you sure about the exact OSM tag for your region ?"
+            "Humm... an empty response. Are you sure about the exact OSM tag"
+            " for your region ?"
         )
         print("Exiting with no extent created.")
         del vector_map
@@ -839,12 +846,12 @@ if __name__ == "__main__":
         )
 
     vector_map.encode_MultiPolygon(
-        multipolygon_area, VECT.dummy_alt, "WATER", check=True, cut=False
+        multipolygon_area, vect.dummy_alt, "WATER", check=True, cut=False
     )
     vector_map.write_node_file(name + ".node")
     vector_map.write_poly_file(name + ".poly")
     print("Triangulate...")
-    MESH.triangulate(name, os.path.join(os.path.dirname(sys.argv[0]), ".."))
+    mesh.triangulate(name, os.path.join(os.path.dirname(sys.argv[0]), ".."))
     ((xmin, ymin, xmax, ymax), mask_im) = triangulation_to_image(
         name, pixel_size, grid_size_or_bbox
     )
@@ -878,7 +885,7 @@ if __name__ == "__main__":
     f.write(buffer)
     f.close()
     if buffer_width:
-        UI.vprint(1, "Buffer of the mask...")
+        ui.vprint(1, "Buffer of the mask...")
         mask_im = mask_im.filter(ImageFilter.GaussianBlur(buffer_width / 4))
         if buffer_width > 0:
             mask_im = Image.fromarray(
@@ -896,7 +903,7 @@ if __name__ == "__main__":
             )
     if mask_width:
         mask_width += 1
-        UI.vprint(1, "Blur of the mask...")
+        ui.vprint(1, "Blur of the mask...")
         img_array = numpy.array(mask_im, dtype=numpy.uint8)
         kernel = numpy.ones(int(mask_width)) / int(mask_width)
         kernel = numpy.array(range(1, 2 * mask_width))

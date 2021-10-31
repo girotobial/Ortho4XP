@@ -8,11 +8,11 @@ from math import sqrt
 
 import numpy
 import requests
-
 from PIL import Image
 
-import src.filenames as FNAMES
 import src.O4_UI_Utils as UI
+
+from . import filenames
 
 has_gdal = False
 
@@ -49,7 +49,7 @@ class DEM:
     def __init__(self, lat, lon, source="", fill_nodata=True, info_only=False):
         self.lat = lat
         self.lon = lon
-        source = source.replace("{latlon}", FNAMES.hem_latlon(lat, lon))
+        source = source.replace("{latlon}", filenames.hem_latlon(lat, lon))
         if ";" in source:
             self.alt = self.alt_composite
             self.alt_vec = self.alt_vec_composite
@@ -83,8 +83,8 @@ class DEM:
 
     def load_data(self, source, info_only=False):
         if not source:
-            if os.path.exists(FNAMES.generic_tif(self.lat, self.lon)):
-                source = FNAMES.generic_tif(self.lat, self.lon)
+            if os.path.exists(filenames.generic_tif(self.lat, self.lon)):
+                source = filenames.generic_tif(self.lat, self.lon)
             else:
                 source = available_sources[1]
         if ";" in source:
@@ -122,7 +122,7 @@ class DEM:
                         self.nydem,
                         self.alt_dem,
                     ) = read_elevation_from_file(
-                        FNAMES.elevation_data(
+                        filenames.elevation_data(
                             short_source, self.lat, self.lon
                         ),
                         self.lat,
@@ -380,7 +380,7 @@ class DEM:
 ###############################################################################
 def build_combined_raster(source, lat, lon, info_only):
     world_tiles = numpy.array(
-        Image.open(os.path.join(FNAMES.Utils_dir, "world_tiles.png"))
+        Image.open(os.path.join(filenames.Utils_dir, "world_tiles.png"))
     )
     if source in ("View", "SRTM"):
         base = 3601
@@ -391,7 +391,7 @@ def build_combined_raster(source, lat, lon, info_only):
         epsg = 4326
         nodata = -32768
         nxdem = nydem = base + 2 * beyond  # = 3673
-    elif source == ("ALOS"):
+    elif source == "ALOS":
         base = 3600
         overlap = 0
         beyond = 36
@@ -414,7 +414,9 @@ def build_combined_raster(source, lat, lon, info_only):
             tmparray = numpy.zeros((base, base), dtype=numpy.float32)
         elif ensure_elevation(source, lat0, (lon0 + 180) % 360 - 180, verbose):
             tmparray = read_elevation_from_file(
-                FNAMES.elevation_data(source, lat0, (lon0 + 180) % 360 - 180),
+                filenames.elevation_data(
+                    source, lat0, (lon0 + 180) % 360 - 180
+                ),
                 lat0,
                 (lon0 + 180) % 360 - 180,
                 info_only,
@@ -545,7 +547,8 @@ def read_elevation_from_file(
             if nodata is None:
                 UI.vprint(
                     1,
-                    "    WARNING: raster DEM does not advertise its no_data value, assuming -32768.",
+                    "    WARNING: raster DEM does not advertise its no_data"
+                    " value, assuming -32768.",
                 )
                 nodata = -32768
             else:  # elevations being stored as float32, we push the nodata to that framework too, and then replace no_data values by -32768 anyway for uniformity
@@ -558,7 +561,8 @@ def read_elevation_from_file(
             except:
                 UI.vprint(
                     1,
-                    "    WARNING: raster DEM does not advertise its EPSG code, assuming 4326.",
+                    "    WARNING: raster DEM does not advertise its EPSG code,"
+                    " assuming 4326.",
                 )
                 epsg = 4326
             if epsg not in (
@@ -569,7 +573,8 @@ def read_elevation_from_file(
                     1,
                     "    WARNING: unsupported EPSG code ",
                     epsg,
-                    ". Only EPSG:4326 is supported, result is likely to be non sense.",
+                    ". Only EPSG:4326 is supported, result is likely to be non"
+                    " sense.",
                 )
             geo = ds.GetGeoTransform()
             # We are assuming AREA_OR_POINT is area here
@@ -657,7 +662,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
             resol = 1
             url = (
                 "http://viewfinderpanoramas.org/dem1/"
-                + os.path.basename(FNAMES.base_file_name(lat, lon)).lower()
+                + os.path.basename(filenames.base_file_name(lat, lon)).lower()
                 + ".zip"
             )
         else:
@@ -707,16 +712,19 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 + deferranti_nbr
                 + ".zip"
             )
-        if os.path.exists(FNAMES.viewfinderpanorama(lat, lon)) and (
+        if os.path.exists(filenames.viewfinderpanorama(lat, lon)) and (
             resol == 3
-            or os.path.getsize(FNAMES.viewfinderpanorama(lat, lon)) >= 25934402
+            or os.path.getsize(filenames.viewfinderpanorama(lat, lon))
+            >= 25934402
         ):
-            UI.vprint(2, "   Recycling ", FNAMES.viewfinderpanorama(lat, lon))
+            UI.vprint(
+                2, "   Recycling ", filenames.viewfinderpanorama(lat, lon)
+            )
             return 1
         UI.vprint(
             1,
             "    Downloading ",
-            FNAMES.viewfinderpanorama(lat, lon),
+            filenames.viewfinderpanorama(lat, lon),
             "from Viewfinderpanoramas (J. de Ferranti).",
         )
         r = http_request(url, source, verbose)
@@ -742,7 +750,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
                     lat0 *= -1
                 if ("W" in fname) or ("w" in fname):
                     lon0 *= -1
-                out_filename = FNAMES.viewfinderpanorama(lat0, lon0)
+                out_filename = filenames.viewfinderpanorama(lat0, lon0)
                 # we don't wish to overwrite a 1" version by downloading the whole archive of a nearby 3" one
                 if (
                     not os.path.exists(out_filename)
@@ -754,15 +762,15 @@ def ensure_elevation(source, lat, lon, verbose=True):
                         UI.vprint(2, "      Extracting", out_filename)
                         out.write(zip_ref.open(f, "r").read())
     elif source in ("SRTM", "ALOS"):
-        if os.path.exists(FNAMES.elevation_data(source, lat, lon)):
+        if os.path.exists(filenames.elevation_data(source, lat, lon)):
             UI.vprint(
-                2, "   Recycling ", FNAMES.elevation_data(source, lat, lon)
+                2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
         UI.vprint(
             1,
             "    Downloading ",
-            FNAMES.elevation_data(source, lat, lon),
+            filenames.elevation_data(source, lat, lon),
             "from OpenTopography (SDSC).",
         )
         url = "https://cloud.sdsc.edu/v1/AUTH_opentopography/Raster/"
@@ -776,7 +784,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 url += "North/North_0_29/"
             else:
                 url += "North/North_30_60/"
-            url += os.path.basename(FNAMES.viewfinderpanorama(lat, lon))
+            url += os.path.basename(filenames.viewfinderpanorama(lat, lon))
         elif source == "ALOS":
             url += "AW3D30/AW3D30_alos/"
             if lat < 0:
@@ -785,33 +793,33 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 url += "North/North_0_45/"
             else:
                 url += "North/North_46_90/"
-            tmp = os.path.basename(FNAMES.base_file_name(lat, lon))
+            tmp = os.path.basename(filenames.base_file_name(lat, lon))
             tmp = tmp[0] + "0" + tmp[1:] + "_AVE_DSM.tif"
             url += tmp
         r = http_request(url, source, verbose)
         if not r:
             return 0
         if not os.path.isdir(
-            os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+            os.path.dirname(filenames.elevation_data(source, lat, lon))
         ):
             os.makedirs(
-                os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+                os.path.dirname(filenames.elevation_data(source, lat, lon))
             )
-        with open(FNAMES.elevation_data(source, lat, lon), "wb") as out:
+        with open(filenames.elevation_data(source, lat, lon), "wb") as out:
             try:
                 out.write(r.content)
             except:
                 return 0
     elif source == "NED1/3":
-        if os.path.exists(FNAMES.elevation_data(source, lat, lon)):
+        if os.path.exists(filenames.elevation_data(source, lat, lon)):
             UI.vprint(
-                2, "   Recycling ", FNAMES.elevation_data(source, lat, lon)
+                2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
         UI.vprint(
             1,
             "    Downloading ",
-            FNAMES.elevation_data(source, lat, lon),
+            filenames.elevation_data(source, lat, lon),
             "from USGS.",
         )
         url_base = (
@@ -840,26 +848,26 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 return 0
         with zipfile.ZipFile(io.BytesIO(r.content), "r") as zip_ref:
             if not os.path.isdir(
-                os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+                os.path.dirname(filenames.elevation_data(source, lat, lon))
             ):
                 os.makedirs(
-                    os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+                    os.path.dirname(filenames.elevation_data(source, lat, lon))
                 )
-            with open(FNAMES.elevation_data(source, lat, lon), "wb") as out:
+            with open(filenames.elevation_data(source, lat, lon), "wb") as out:
                 try:
                     out.write((zip_ref.open(usgs_name + ".img", "r").read()))
                 except:
                     return 0
     elif source == "NED1":
-        if os.path.exists(FNAMES.elevation_data(source, lat, lon)):
+        if os.path.exists(filenames.elevation_data(source, lat, lon)):
             UI.vprint(
-                2, "   Recycling ", FNAMES.elevation_data(source, lat, lon)
+                2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
         UI.vprint(
             1,
             "    Downloading ",
-            FNAMES.elevation_data(source, lat, lon),
+            filenames.elevation_data(source, lat, lon),
             "from USGS.",
         )
         url_base = "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/ArcGrid/"
@@ -876,10 +884,10 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 return 0
         with zipfile.ZipFile(io.BytesIO(r.content), "r") as zip_ref:
             if not os.path.isdir(
-                os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+                os.path.dirname(filenames.elevation_data(source, lat, lon))
             ):
                 os.makedirs(
-                    os.path.dirname(FNAMES.elevation_data(source, lat, lon))
+                    os.path.dirname(filenames.elevation_data(source, lat, lon))
                 )
             for f in zip_ref.filelist:
                 if not ".adf" in f.filename:
@@ -888,7 +896,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 with open(
                     os.path.join(
                         os.path.dirname(
-                            FNAMES.elevation_data(source, lat, lon)
+                            filenames.elevation_data(source, lat, lon)
                         ),
                         fname,
                     ),
@@ -956,7 +964,8 @@ def fill_nodata_values_with_nearest_neighbor(alt_dem, nodata):
                 return 0
             UI.vprint(
                 2,
-                "    INFO: Elevation file contains voids, trying to fill them recursively by nearest neighbour.",
+                "    INFO: Elevation file contains voids, trying to fill them"
+                " recursively by nearest neighbour.",
             )
         else:
             UI.vprint(2, "    ", step)
@@ -976,7 +985,8 @@ def fill_nodata_values_with_nearest_neighbor(alt_dem, nodata):
         if step > 20:
             UI.vprint(
                 1,
-                "    WARNING: The raster contain holes that seem to big to be filled... I'm filling the remainder with zero.",
+                "    WARNING: The raster contain holes that seem to big to be"
+                " filled... I'm filling the remainder with zero.",
             )
             alt_dem[alt_dem == nodata] = 0
             break

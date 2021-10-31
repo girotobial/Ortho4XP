@@ -43,7 +43,8 @@ for f in os.listdir():
         + f.replace(".jpg", "_tmp.tif")
     )
     os.system(
-        "gdalwarp -of Gtiff -co COMPRESS=JPEG -s_srs epsg:3857 -t_srs epsg:4326 -ts 4096 4096 -rb "
+        "gdalwarp -of Gtiff -co COMPRESS=JPEG -s_srs epsg:3857 -t_srs"
+        " epsg:4326 -ts 4096 4096 -rb "
         + f.replace(".jpg", "_tmp.tif")
         + " "
         + f.replace(".jpg", ".tif")
