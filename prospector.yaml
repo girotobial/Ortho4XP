@@ -1,0 +1,11 @@
+test-warnings: true
+pep8:
+  disable:
+    - E203
+    - W503
+  full: true
+  options:
+    max-line-length: 79
+
+vulture:
+  run: true

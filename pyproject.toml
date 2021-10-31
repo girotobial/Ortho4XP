@@ -18,11 +18,12 @@ Pillow = "8.3.2"
 pyproj = "3.2.0"
 
 [tool.poetry.dev-dependencies]
-flake8 = "3.9.2"
 black = "21.9b0"
 isort = "5.9.3"
 mypy = "0.910"
-pytest = "^6.2.5"
+pytest = "6.2.5"
+prospector = {extras = ["with_vulture"], version = "1.5.1"}
+types-requests = "2.25.11"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
