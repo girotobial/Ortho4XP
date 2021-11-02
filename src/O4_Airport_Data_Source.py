@@ -29,7 +29,6 @@ __ZL_OPTIM_LIMIT__ = 12  # At which ZL do we stop replacing lower zl tiles with 
 
 class O4AirportDataSourceException(Exception):
     """Base exception class for all exceptions raised by this module"""
-    pass
 
 
 ########################################################################################################################
@@ -255,7 +254,7 @@ class XPlaneTile:
         return self._hash
 
     def __repr__(self):
-        return '<XPlaneTile {:+03d}{:+04d}>'.format(self.lat, self.lon)
+        return f'<XPlaneTile {self.lat:+03d}{self.lon:+04d}>'
 
     def surrounding_tiles(self, include_self=False):
         """Return the tiles surrounding this one (NOT including itself).
@@ -369,8 +368,8 @@ class GTile:
     @staticmethod
     @functools.lru_cache(maxsize=2 ** 15)
     def _cached_polygon(x, y, zl):
-        (lat_max, lon_min) = GEO.gtile_to_wgs84(x, y, zl)
-        (lat_min, lon_max) = GEO.gtile_to_wgs84(x + 16, y + 16, zl)
+        lat_max, lon_min = GEO.gtile_to_wgs84(x, y, zl)
+        lat_min, lon_max = GEO.gtile_to_wgs84(x + 16, y + 16, zl)
         return shapely.geometry.Polygon([(lon_min, lat_min),
                                          (lon_max, lat_min),
                                          (lon_max, lat_max),
@@ -401,10 +400,10 @@ class Runway:
         self.end_2_id = runway_data['end_2_id']
         self.end_2_lat = runway_data['end_2_lat']
         self.end_2_lon = runway_data['end_2_lon']
-        self._hash = (self.end_1_id, self.end_2_id)
+        self._hash = hash((self.end_1_id, self.end_2_id))
 
     def __repr__(self):
-        return '<Runway: {} / {}>'.format(self.end_1_id, self.end_2_id)
+        return f'<Runway: {self.end_1_id} / {self.end_2_id}>'
 
     def __eq__(self, other):
         if not isinstance(other, Runway):
@@ -436,16 +435,16 @@ class Runway:
         geod = pyproj.Geod(ellps='WGS84')
 
         # First compute the azimuts and length between the two runway ends
-        (azimut_1_2, azimut_2_1, length) = geod.inv(lons1=self.end_1_lon,
-                                                    lats1=self.end_1_lat,
-                                                    lons2=self.end_2_lon,
-                                                    lats2=self.end_2_lat)
+        azimut_1_2, _, length = geod.inv(lons1=self.end_1_lon,
+                                         lats1=self.end_1_lat,
+                                         lons2=self.end_2_lon,
+                                         lats2=self.end_2_lat)
 
         # Then find the center of the runway and return it
-        (lon, lat, _) = geod.fwd(lons=self.end_1_lon,
-                                 lats=self.end_1_lat,
-                                 az=azimut_1_2,
-                                 dist=length / 2)
+        lon, lat, _ = geod.fwd(lons=self.end_1_lon,
+                               lats=self.end_1_lat,
+                               az=azimut_1_2,
+                               dist=length / 2)
 
         return shapely.geometry.Point(lon, lat)
 
@@ -460,10 +459,10 @@ class Runway:
         coords = []
 
         # First compute the azimuts and length between the two runway ends
-        (azimut_1_2, azimut_2_1, length) = geod.inv(lons1=self.end_1_lon,
-                                                    lats1=self.end_1_lat,
-                                                    lons2=self.end_2_lon,
-                                                    lats2=self.end_2_lat)
+        azimut_1_2, azimut_2_1, length = geod.inv(lons1=self.end_1_lon,
+                                                  lats1=self.end_1_lat,
+                                                  lons2=self.end_2_lon,
+                                                  lats2=self.end_2_lat)
 
         # Deduce the polygon dimensions
         polygon_length = 2 * optimal_ground_dist + length
@@ -471,10 +470,10 @@ class Runway:
         center = self._runway_center()
 
         # Compute the two points near end_1
-        (lon, lat, _) = geod.fwd(lons=center.x,
-                                 lats=center.y,
-                                 az=azimut_2_1,
-                                 dist=polygon_length / 2)
+        lon, lat, _ = geod.fwd(lons=center.x,
+                               lats=center.y,
+                               az=azimut_2_1,
+                               dist=polygon_length / 2)
         ((lon_1, lon_2), (lat_1, lat_2), _) = geod.fwd(lons=(lon, lon),
                                                        lats=(lat, lat),
                                                        az=(azimut_2_1 - 90.0,
@@ -500,7 +499,7 @@ class Runway:
         prepared_polygon = shapely.prepared.prep(self.raw_polygon(zl, screen_res, fov, fpa))
 
         # Find all the gtiles covering it
-        (lon_min, lat_min, lon_max, lat_max) = prepared_polygon.context.envelope.bounds
+        lon_min, lat_min, lon_max, lat_max = prepared_polygon.context.envelope.bounds
         x_min, y_min = GEO.wgs84_to_orthogrid(lat_max, lon_min, zl)
         x_max, y_max = GEO.wgs84_to_orthogrid(lat_min, lon_max, zl)
 
@@ -531,7 +530,7 @@ class Airport:
                         for rw in [Runway(rw_data) for rw_data in airport_data['runways']]}
 
     def __repr__(self):
-        return '<Airport: {} "{}">'.format(self.icao, self.name)
+        return f'<Airport: {self.icao} "{self.name}">'
 
     #
     # Partial Dict interface
@@ -586,7 +585,7 @@ class AirportCollection:
     - a list of Airport instances
     - a list of AirportCollection instances
     - a dict of {key: airport_sub_dict}, typically coming from JSON data
-        => key is ignored, aiport_sub_dict is turned in an Airport instance)
+        => key is ignored, airport_sub_dict is turned in an Airport instance)
     """
 
     @classmethod
@@ -677,8 +676,8 @@ class AirportCollection:
         zl_optim_limit = max(__ZL_OPTIM_LIMIT__, (zl - greediness))
         for threshold_len in [greediness_threshold * 2 ** (2 * (zl - i))
                               for i in range(zl - 1, zl_optim_limit - 1, -1)]:
-            for zl_optim_tile in zl_n_tiles.keys():
-                if len(zl_n_tiles[zl_optim_tile]) >= threshold_len:
+            for (zl_optim_tile, zl_n_group) in zl_n_tiles.items():
+                if len(zl_n_group) >= threshold_len:
                     # If so, add the remaining ZLn tiles
                     zl_n_tiles[zl_optim_tile] = zl_optim_tile.higher_zl_subtiles(target_zl=zl)
 
