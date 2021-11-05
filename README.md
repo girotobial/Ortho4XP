@@ -1,6 +1,6 @@
 # Ortho4XP
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 A scenery generator for the X-Plane flight simulator
 
@@ -16,6 +16,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/girotobial"><img src="https://avatars.githubusercontent.com/u/57213333?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Robinson</b></sub></a><br /><a href="https://github.com/Ortho4XP/Ortho4XP/commits?author=girotobial" title="Code">💻</a> <a href="#ideas-girotobial" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-girotobial" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/artesim"><img src="https://avatars.githubusercontent.com/u/38612405?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Artesim</b></sub></a><br /><a href="https://github.com/Ortho4XP/Ortho4XP/commits?author=artesim" title="Code">💻</a> <a href="#ideas-artesim" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-artesim" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/OldSubSailor"><img src="https://avatars.githubusercontent.com/u/54075170?v=4?s=100" width="100px;" alt=""/><br /><sub><b>OldSubSailor</b></sub></a><br /><a href="#ideas-OldSubSailor" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/d41k4n"><img src="https://avatars.githubusercontent.com/u/6691087?v=4?s=100" width="100px;" alt=""/><br /><sub><b>d41k4n</b></sub></a><br /><a href="https://github.com/Ortho4XP/Ortho4XP/commits?author=d41k4n" title="Code">💻</a> <a href="#question-d41k4n" title="Answering Questions">💬</a></td>
   </tr>
 </table>
 
