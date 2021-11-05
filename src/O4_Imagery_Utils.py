@@ -196,7 +196,7 @@ def initialize_providers_dict():
                 elif key=='epsg_code':
                     try:
                         GEO.epsg[value]=GEO.pyproj.Proj(init='epsg:'+value)
-                    except:
+                    except GEO.pyproj.exceptions.CRSError:
                         # HACK for Slovenia
                         if int(value)==102060:
                             GEO.epsg[value]=GEO.pyproj.Proj(init='epsg:3912')
