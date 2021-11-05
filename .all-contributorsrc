@@ -6,6 +6,17 @@
   "commit": false,
   "contributors": [
     {
+      "login": "girotobial",
+      "name": "Alex Robinson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57213333?v=4",
+      "profile": "https://github.com/girotobial",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance"
+      ]
+    },
+    {
       "login": "artesim",
       "name": "Artesim",
       "avatar_url": "https://avatars.githubusercontent.com/u/38612405?v=4",
