@@ -15,6 +15,17 @@
         "ideas",
         "maintenance"
       ]
+    },
+    {
+      "login": "artesim",
+      "name": "Artesim",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38612405?v=4",
+      "profile": "https://github.com/artesim",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
