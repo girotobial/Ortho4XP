@@ -568,9 +568,9 @@ class Airport:
         }
 
     def gtiles(self, zl, screen_res, fov, fpa):
-        return set([tile
-                    for rw in self.runways.values()
-                    for tile in rw.gtiles(zl, screen_res, fov, fpa)])
+        return set(tile
+                   for rw in self.runways.values()
+                   for tile in rw.gtiles(zl, screen_res, fov, fpa))
 
 
 class AirportCollection:
@@ -687,9 +687,9 @@ class AirportCollection:
                 zl_n_tiles_new[zl_optim_tile.lower_zl_tile()].extend(zl_n_group)
             zl_n_tiles = zl_n_tiles_new
 
-        return set([tile
-                    for tile_group in zl_n_tiles.values()
-                    for tile in tile_group])
+        return set(tile
+                   for tile_group in zl_n_tiles.values()
+                   for tile in tile_group)
 
     @staticmethod
     def _compacted_tile_set(tiles: set):
