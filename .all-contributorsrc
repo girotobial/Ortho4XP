@@ -35,6 +35,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "d41k4n",
+      "name": "d41k4n",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6691087?v=4",
+      "profile": "https://github.com/d41k4n",
+      "contributions": [
+        "code",
+        "question"
+      ]
     }
   ],
   "contributorsPerLine": 7,
