@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "artesim",
+      "name": "Artesim",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38612405?v=4",
+      "profile": "https://github.com/artesim",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "Ortho4XP",
+  "projectOwner": "Ortho4XP",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
