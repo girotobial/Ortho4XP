@@ -1,16 +1,16 @@
-NOTICE 1. Windows users: Only use Notepad++ or an equivalent decent editor 
-to read or modify Ortho4XP related files. Notepad doesn't understand linux 
-line-ends and will create a mess. 
+NOTICE 1. Windows users: Only use Notepad++ or an equivalent decent editor
+to read or modify Ortho4XP related files. Notepad doesn't understand linux
+line-ends and will create a mess.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
-NOTICE 2 : Windows users: You do not need to read further than this 
+NOTICE 2 : Windows users: You do not need to read further than this
 notice if you have installed the binary windows version !
-In your case, the executable file is Binary/Ortho4XP_v130.exe, and the 
+In your case, the executable file is Binary/Ortho4XP_v130.exe, and the
 only advisable action is to make a short-cut to it somewhere, e.g. in the
-main Ortho4XP directory (but the executable needs to stay where it is). 
+main Ortho4XP directory (but the executable needs to stay where it is).
 If you end-up installing the python modules some day (to get more frequent
-updates or bugs fixed), the Binary directory won't be necessary anymore. 
+updates or bugs fixed), the Binary directory won't be necessary anymore.
 ------------------------------------------------------------------------
 
 The following instructions are for the script install :
@@ -39,13 +39,13 @@ cd /path/to/Ortho4XP
 poetry install
 
 6) Launch Ortho4XP
-poetry run python Ortho4XP_v130.py
+poetry run python Ortho4XP.py
 
 
 Windows
 -------
 
-1) Download and install Python 3.9 from www.python.org 
+1) Download and install Python 3.9 from www.python.org
 
 2) Install Poetry from https://python-poetry.org/docs/#installation
 
@@ -60,11 +60,11 @@ poetry install
 Pay attention to take the ones that correspond to the Python version which you picked
 at Step 1) and to your OS nbr of bits (32 or 64, I guess 64 in all but a few cases).
 As an example, for Python 3.9.* and if you
-have a 64bit windows, then you would choose these files that have -cp39- and _amd64 
+have a 64bit windows, then you would choose these files that have -cp39- and _amd64
 within their filename.
 
 Finally, if you do not already have them : download and install the build tools for visual studio (2017):
-https://visualstudio.microsoft.com/fr/downloads/  
+https://visualstudio.microsoft.com/fr/downloads/
 
 
 4) Install GDAL into python
@@ -88,4 +88,4 @@ cd /path/to/Ortho4XP
 ./install_mac.sh
 
 4) Launch Ortho4XP
-poetry run python3 Ortho4XP_v130.py
+poetry run python3 Ortho4XP.py
