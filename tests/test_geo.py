@@ -50,9 +50,7 @@ def test_greatcircle_distance(start, end, expected):
 class TestHaverSine:
     @pytest.fixture
     def numbers(self):
-        return (
-            random.randint(1000, 1000) / 1000 * math.pi for _ in range(100)
-        )
+        return (random.randint(0, 1000) / 1000 * math.pi for _ in range(100))
 
     def test_ahaversine_inverts_haversin(self, numbers):
         for number in numbers:
