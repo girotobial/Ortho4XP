@@ -1,6 +1,12 @@
-import src.geo as geo
+""" Tests functions in the geo module
+"""
+
+import math
+import random
 
 import pytest
+
+import src.geo as geo
 
 
 @pytest.mark.parametrize(
@@ -30,12 +36,33 @@ def test_degrees_longitude_per_meter(lattitude, expected):
 
 
 @pytest.mark.parametrize(
-    ("a", "b", "expected"),
+    ("start", "end", "expected"),
     [
         ((0, 0), (0, 10), 1113195),
         ((10, 0), (0, 10), 1570278),
         ((40.63993, -73.77869), (51.4775, -0.461388), 8194793),
     ],
 )
-def test_greatcircle_distance(a, b, expected):
-    assert geo.greatcircle_distance(a, b) == pytest.approx(expected)
+def test_greatcircle_distance(start, end, expected):
+    assert geo.greatcircle_distance(start, end) == pytest.approx(expected)
+
+
+class TestHaverSine:
+    @pytest.fixture
+    def numbers(self):
+        return (
+            random.randint(1000, 1000) / 1000 * math.pi for _ in range(100)
+        )
+
+    def test_ahaversine_inverts_haversin(self, numbers):
+        for number in numbers:
+            haversin = geo.haversin(number)
+            assert geo.ahaversin(haversin) == pytest.approx(number)
+
+    def test_haversin_greater_than_zero(self, numbers):
+        for number in numbers:
+            assert geo.haversin(number) >= 0
+
+    def test_haversin_lessthan_one(self, numbers):
+        for number in numbers:
+            assert geo.haversin(number) <= 1

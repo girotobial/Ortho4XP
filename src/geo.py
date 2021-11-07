@@ -1,5 +1,5 @@
 import functools
-from math import asin, atan, cos, exp, floor, log, log2, pi, sqrt, tan
+from math import acos, atan, cos, exp, floor, log, log2, pi, tan
 from typing import Tuple
 
 import numpy as np
@@ -73,7 +73,7 @@ def ahaversin(__haversin: float) -> float:
     float
         The inverse haversine (measured in radians) of x
     """
-    return 2 * asin(sqrt(__haversin))
+    return acos(1 - 2 * __haversin)
 
 
 def greatcircle_distance(
@@ -91,7 +91,8 @@ def greatcircle_distance(
     Returns
     -------
     float
-        The great circle distance between start and end over the earth's surface
+        The great circle distance between start and
+        end over the earth's surface
     """
     start_radians = np.radians(start)
     end_radians = np.radians(end)
