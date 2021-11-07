@@ -9,3 +9,5 @@ pep8:
 
 vulture:
   run: true
+  paths: ["src"]
+  min_confidence: 80
