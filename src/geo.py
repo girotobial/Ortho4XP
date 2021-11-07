@@ -1,19 +1,8 @@
 import functools
-from math import (
-    atan,
-    cos,
-    exp,
-    floor,
-    log,
-    log2,
-    pi,
-    sqrt,
-    tan,
-    asin,
-)
+from math import asin, atan, cos, exp, floor, log, log2, pi, sqrt, tan
 from typing import Tuple
-from numpy import radians
 
+import numpy as np
 import pyproj
 
 EARTH_RADIUS = 6378137
@@ -35,7 +24,7 @@ def meters_per_degree_longitude(lattitude: float) -> float:
     float
         Length of one degree of longitude in meters.
     """
-    return round(METERS_PER_DEGREE_LATITUDE * cos(radians(lattitude)), 10)
+    return round(METERS_PER_DEGREE_LATITUDE * cos(np.radians(lattitude)), 10)
 
 
 def degrees_longitude_per_meter(lattitude: float) -> float:
@@ -53,73 +42,73 @@ def degrees_longitude_per_meter(lattitude: float) -> float:
     """
     if lattitude == 90:
         return float("inf")
-    return DEGREES_LATITUDE_PER_METER / cos(radians(lattitude))
+    return DEGREES_LATITUDE_PER_METER / cos(np.radians(lattitude))
 
 
-def hav(x: float) -> float:
+def haversin(angle: float) -> float:
     """The haversine function
 
     Parameters
     ----------
-    x : float
+    angle : float
         Angle in radians
 
     Returns
     -------
     float
-        The haversine of x
+        The haversine of the angle
     """
-    return (1 - cos(x)) * 0.5
+    return (1 - cos(angle)) * 0.5
 
 
-def ahav(x: float) -> float:
+def ahaversin(__haversin: float) -> float:
     """The inverse haversine function
 
     Parameters
     ----------
-    x : float
+    __haversin : float
 
     Returns
     -------
     float
         The inverse haversine (measured in radians) of x
     """
-    return 2 * asin(sqrt(x))
+    return 2 * asin(sqrt(__haversin))
 
 
 def greatcircle_distance(
-    a: Tuple[float, float], b: Tuple[float, float]
+    start: Tuple[float, float], end: Tuple[float, float]
 ) -> float:
     """[summary]
 
     Parameters
     ----------
-    a : Tuple[float, float]
+    start : Tuple[float, float]
         (longitude_a, latitude_a)
-    b : Tuple[float, float]
+    end : Tuple[float, float]
         (longitude_b, latitude_b)
 
     Returns
     -------
     float
-        The great circle distance between a and b over the earth's surface
+        The great circle distance between start and end over the earth's surface
     """
-    a_radians = radians(a)
-    b_radians = radians(b)
+    start_radians = np.radians(start)
+    end_radians = np.radians(end)
 
-    a_lat = a_radians[1]
-    a_long = a_radians[0]
-    b_lat = b_radians[1]
-    b_long = b_radians[0]
+    start_lat = start_radians[1]
+    start_long = start_radians[0]
+    end_lat = end_radians[1]
+    end_long = end_radians[0]
 
-    longitude_difference = b_long - a_long
-    lattitude_difference = b_lat - a_lat
+    longitude_difference = end_long - start_long
+    lattitude_difference = end_lat - start_lat
 
-    angle = hav(lattitude_difference) + cos(a_lat) * cos(b_lat) * hav(
-        longitude_difference
-    )
+    angle = haversin(lattitude_difference) + cos(start_lat) * cos(
+        end_lat
+    ) * haversin(longitude_difference)
 
-    return EARTH_RADIUS * ahav(angle)
+    return EARTH_RADIUS * ahaversin(angle)
 
 
 epsg = {key: pyproj.CRS(f"epsg:{key}") for key in ("4326", "3857")}
