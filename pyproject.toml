@@ -2,7 +2,7 @@
 name = "Ortho4XP"
 version = "1.30"
 description = "A scenery generator for the X-Plane flight simulator"
-authors = ["oscarpilote"]
+authors = ["oscarpilote", "artesim", "girotobial"]
 license = "GPL3"
 
 [tool.poetry.dependencies]
@@ -18,6 +18,8 @@ pyproj = "3.2.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
+prospector = {extras = ["with_mypy", "with_vulture"], version = "^1.5.1"}
+black = "^21.10b0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
