@@ -10,7 +10,6 @@ from math import ceil, log, pi, tan
 from pathlib import Path
 
 import numpy
-import pydantic
 import requests
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
@@ -200,12 +199,6 @@ def initialize_color_filters_dict():
                 )
 
 
-class Provider:
-    """Validates the Lay file input"""
-
-    ...
-
-
 def parse_lay_file(f: typing.TextIO) -> dict[str, str]:
     def clean_line(line: str) -> str:
         line = line.strip("\n")
@@ -230,193 +223,260 @@ def initialize_providers_dict() -> None:
     for dir_name in Path(filenames.Provider_dir).iterdir():
         if not dir_name.is_dir():
             continue
-        for file_name in os.listdir(os.path.join(filenames.Provider_dir,dir_name)):
-            if '.' not in file_name or file_name.split('.')[-1]!='lay': continue
-            provider_code=file_name.split('.')[0]
-            provider={}
-            f=open(os.path.join(filenames.Provider_dir,dir_name,file_name),'r')
-            valid_provider=True
+        for file_name in os.listdir(
+            os.path.join(filenames.Provider_dir, dir_name)
+        ):
+            if "." not in file_name or file_name.split(".")[-1] != "lay":
+                continue
+            provider_code = file_name.split(".")[0]
+            provider = {}
+            f = open(
+                os.path.join(filenames.Provider_dir, dir_name, file_name), "r"
+            )
+            valid_provider = True
             for line in f.readlines():
-                line=line.strip()
+                line = line.strip()
                 if "#" in line:
-                    if line[0]=="#":
+                    if line[0] == "#":
                         continue
                     else:
-                        line=line.split('#')[0]
-                if ("=" not in line): continue
-                items=line.split("=")
-                key=items[0].strip()
-                value='='.join(items[1:]).strip()
-                provider[key]=value
+                        line = line.split("#")[0]
+                if "=" not in line:
+                    continue
+                items = line.split("=")
+                key = items[0].strip()
+                value = "=".join(items[1:]).strip()
+                provider[key] = value
                 # structuring data
-                if key=='request_type' and value not in ['wms','wmts','tms','local_tms']:
-                    ui.vprint(0,"Unknown request_type field for provider",provider_code,":",value)
-                    valid_provider=False
-                if key=='grid_type' and value not in ['webmercator']:
-                    ui.vprint(0,"Unknown grid_type field for provider",provider_code,":",value)
-                    valid_provider=False
-                elif key=='fake_headers':
+                if key == "request_type" and value not in [
+                    "wms",
+                    "wmts",
+                    "tms",
+                    "local_tms",
+                ]:
+                    ui.vprint(
+                        0,
+                        "Unknown request_type field for provider",
+                        provider_code,
+                        ":",
+                        value,
+                    )
+                    valid_provider = False
+                if key == "grid_type" and value not in ["webmercator"]:
+                    ui.vprint(
+                        0,
+                        "Unknown grid_type field for provider",
+                        provider_code,
+                        ":",
+                        value,
+                    )
+                    valid_provider = False
+                elif key == "fake_headers":
                     try:
-                        provider[key]=eval(value)
+                        provider[key] = eval(value)
                         if type(provider[key]) is not dict:
-                            print("Definition of fake headers for provider",provider_code,"not valid.")
-                            valid_provider=False
+                            print(
+                                "Definition of fake headers for provider",
+                                provider_code,
+                                "not valid.",
+                            )
+                            valid_provider = False
                     except:
-                        print("Definition of fake headers for provider",provider_code,"not valid.")
-                        valid_provider=False
-                elif key=='epsg_code':
+                        print(
+                            "Definition of fake headers for provider",
+                            provider_code,
+                            "not valid.",
+                        )
+                        valid_provider = False
+                elif key == "epsg_code":
                     try:
-                        geo.epsg[value]=geo.pyproj.Proj(init='epsg:'+value)
+                        geo.epsg[value] = geo.pyproj.Proj(init="epsg:" + value)
                     except geo.pyproj.exceptions.CRSError:
                         # HACK for Slovenia
-                        if int(value)==102060:
-                            geo.epsg[value]=geo.pyproj.Proj(init='epsg:3912')
+                        if int(value) == 102060:
+                            geo.epsg[value] = geo.pyproj.Proj(init="epsg:3912")
                         else:
-                            ui.vprint(0,"Error in epsg code for provider",provider_code)
-                            valid_provider=False
-                elif key=='in_GUI':
-                    try:
-                        provider['in_GUI']=eval(value)
-                        if not isinstance(provider['in_GUI'],bool):
-                            ui.vprint(0,"Error in GUI status for provider",provider_code)
-                            provider['in_GUI']=True
-                    except:
-                        ui.vprint(0,"Error in GUI status for provider",provider_code)
-                        provider['in_GUI']=True
-                elif key=='image_type':
-                    pass
-                elif key=='url_prefix':
-                    pass
-                elif key=='url_template':
-                    pass
-                elif key=='layers':
-                    pass
-                elif key in ['wms_size','tile_size']:
-                    try:
-                        provider[key]=int(value)
-                        if provider[key]<100 or provider[key]>10000:
-                            print("Wm(t)s size for provider ",provider_code,"seems off limits, provider skipped.")
-                    except:
-                        print("Error in reading wms size for provider",provider_code)
-                        valid_provider=False
-                elif key in ['wms_version','wmts_version']:
-                    if len(value.split('.'))<2:
-                        print("Error in reading wms version for provider",provider_code)
-                        valid_provider=False
-                elif key=='top_left_corner':
-                    try:
-                        provider[key]=[numpy.array([float(x) for x in value.split()]) for _ in range(40)]
-                    except:
-                        print("Error in reading top left corner for provider",provider_code)
-                        valid_provider=False
-                elif key=='scaledenominator':
-                    try:
-                        provider[key]=numpy.array([float(x) for x in value.split()])
-                    except:
-                        print("Error in reading scaledenominator for provider",provider_code)
-                        valid_provider=False
-                elif key == 'tilematrixset':
-                    pass
-                elif key=='resolutions':
-                    try:
-                        provider[key]=numpy.array([float(x) for x in value.split()])
-                    except:
-                        print("Error in reading resolutions for provider",provider_code)
-                        valid_provider=False
-                elif key=='max_threads':
-                    try:
-                        provider[key]=int(value)
-                    except:
-                        pass
-                    elif key == "url_prefix":
-                        pass
-                    elif key == "url_template":
-                        pass
-                    elif key == "layers":
-                        pass
-                    elif key in ["wms_size", "tile_size"]:
-                        try:
-                            provider[key] = int(value)
-                            if provider[key] < 100 or provider[key] > 10000:
-                                print(
-                                    "Wm(t)s size for provider ",
-                                    provider_code,
-                                    "seems off limits, provider skipped.",
-                                )
-                        except ValueError:
-                            print(
-                                "Error in reading wms size for provider",
+                            ui.vprint(
+                                0,
+                                "Error in epsg code for provider",
                                 provider_code,
                             )
                             valid_provider = False
-                    elif key in ["wms_version", "wmts_version"]:
-                        if len(value.split(".")) < 2:
-                            print(
-                                "Error in reading wms version for provider",
+                elif key == "in_GUI":
+                    try:
+                        provider["in_GUI"] = eval(value)
+                        if not isinstance(provider["in_GUI"], bool):
+                            ui.vprint(
+                                0,
+                                "Error in GUI status for provider",
                                 provider_code,
                             )
-                            valid_provider = False
-                    elif key == "top_left_corner":
-                        try:
-                            provider[key] = [
-                                numpy.array([float(x) for x in value.split()])
-                                for _ in range(40)
-                            ]
-                        except ValueError:
+                            provider["in_GUI"] = True
+                    except:
+                        ui.vprint(
+                            0,
+                            "Error in GUI status for provider",
+                            provider_code,
+                        )
+                        provider["in_GUI"] = True
+                elif key == "image_type":
+                    pass
+                elif key == "url_prefix":
+                    pass
+                elif key == "url_template":
+                    pass
+                elif key == "layers":
+                    pass
+                elif key in ["wms_size", "tile_size"]:
+                    try:
+                        provider[key] = int(value)
+                        if provider[key] < 100 or provider[key] > 10000:
                             print(
-                                "Error in reading top left corner for"
-                                " provider",
+                                "Wm(t)s size for provider ",
                                 provider_code,
+                                "seems off limits, provider skipped.",
                             )
-                            valid_provider = False
-                    elif key == "scaledenominator":
-                        try:
-                            provider[key] = numpy.array(
-                                [float(x) for x in value.split()]
-                            )
-                        except ValueError:
-                            print(
-                                "Error in reading scaledenominator for"
-                                " provider",
-                                provider_code,
-                            )
-                            valid_provider = False
-                    elif key == "tilematrixset":
+                    except:
+                        print(
+                            "Error in reading wms size for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key in ["wms_version", "wmts_version"]:
+                    if len(value.split(".")) < 2:
+                        print(
+                            "Error in reading wms version for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "top_left_corner":
+                    try:
+                        provider[key] = [
+                            numpy.array([float(x) for x in value.split()])
+                            for _ in range(40)
+                        ]
+                    except:
+                        print(
+                            "Error in reading top left corner for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "scaledenominator":
+                    try:
+                        provider[key] = numpy.array(
+                            [float(x) for x in value.split()]
+                        )
+                    except:
+                        print(
+                            "Error in reading scaledenominator for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "tilematrixset":
+                    pass
+                elif key == "resolutions":
+                    try:
+                        provider[key] = numpy.array(
+                            [float(x) for x in value.split()]
+                        )
+                    except:
+                        print(
+                            "Error in reading resolutions for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "max_threads":
+                    try:
+                        provider[key] = int(value)
+                    except:
                         pass
-                    elif key == "resolutions":
-                        try:
-                            provider[key] = numpy.array(
-                                [float(x) for x in value.split()]
-                            )
-                        except ValueError:
+                elif key == "url_prefix":
+                    pass
+                elif key == "url_template":
+                    pass
+                elif key == "layers":
+                    pass
+                elif key in ["wms_size", "tile_size"]:
+                    try:
+                        provider[key] = int(value)
+                        if provider[key] < 100 or provider[key] > 10000:
                             print(
-                                "Error in reading resolutions for provider",
+                                "Wm(t)s size for provider ",
                                 provider_code,
+                                "seems off limits, provider skipped.",
                             )
-                            valid_provider = False
-                    elif key == "max_threads":
-                        try:
-                            provider[key] = int(value)
-                        except ValueError:
-                            pass
-                    elif key == "extent":
+                    except ValueError:
+                        print(
+                            "Error in reading wms size for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key in ["wms_version", "wmts_version"]:
+                    if len(value.split(".")) < 2:
+                        print(
+                            "Error in reading wms version for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "top_left_corner":
+                    try:
+                        provider[key] = [
+                            numpy.array([float(x) for x in value.split()])
+                            for _ in range(40)
+                        ]
+                    except ValueError:
+                        print(
+                            "Error in reading top left corner for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "scaledenominator":
+                    try:
+                        provider[key] = numpy.array(
+                            [float(x) for x in value.split()]
+                        )
+                    except ValueError:
+                        print(
+                            "Error in reading scaledenominator for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "tilematrixset":
+                    pass
+                elif key == "resolutions":
+                    try:
+                        provider[key] = numpy.array(
+                            [float(x) for x in value.split()]
+                        )
+                    except ValueError:
+                        print(
+                            "Error in reading resolutions for provider",
+                            provider_code,
+                        )
+                        valid_provider = False
+                elif key == "max_threads":
+                    try:
+                        provider[key] = int(value)
+                    except ValueError:
                         pass
-                    elif key == "color_filters":
-                        if value not in color_filters_dict:
-                            print(
-                                "Error in reading color_filter for provider",
-                                provider_code,
-                                ". Assuming none.",
-                            )
-                            provider[key] = "none"
-                    elif key == "imagery_dir":
-                        if value not in ("grouped", "normal", "code"):
-                            print(
-                                "Error in reading imagery_dir for provider",
-                                provider_code,
-                                ". Assuming grouped.",
-                            )
-                            provider[key] = "grouped"
+                elif key == "extent":
+                    pass
+                elif key == "color_filters":
+                    if value not in color_filters_dict:
+                        print(
+                            "Error in reading color_filter for provider",
+                            provider_code,
+                            ". Assuming none.",
+                        )
+                        provider[key] = "none"
+                elif key == "imagery_dir":
+                    if value not in ("grouped", "normal", "code"):
+                        print(
+                            "Error in reading imagery_dir for provider",
+                            provider_code,
+                            ". Assuming grouped.",
+                        )
+                        provider[key] = "grouped"
                 if (
                     "request_type" in provider
                     and provider["request_type"] == "wmts"
