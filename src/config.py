@@ -5,8 +5,9 @@ from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
 
 from . import O4_OSM_Utils as osm
+from . import O4_Tile_Utils as tile
 from . import O4_UI_Utils as ui
-from . import airport_data, dem, filenames
+from . import airport_data, dem, filenames, imagery
 from .common import CoverZLConfig, DecalConfig, ScreenRes
 
 cfg_vars = {
@@ -79,7 +80,7 @@ cfg_vars = {
         ),
     },
     "check_tms_response": {
-        "module": "img",
+        "module": "imagery",
         "type": bool,
         "default": True,
         "hint": (
@@ -88,13 +89,13 @@ cfg_vars = {
         ),
     },
     "http_timeout": {
-        "module": "img",
+        "module": "imagery",
         "type": float,
         "default": 10,
         "hint": "Delay before we decide that a http request is timed out.",
     },
     "max_connect_retries": {
-        "module": "img",
+        "module": "imagery",
         "type": int,
         "default": 5,
         "hint": (
@@ -103,7 +104,7 @@ cfg_vars = {
         ),
     },
     "max_baddata_retries": {
-        "module": "img",
+        "module": "imagery",
         "type": int,
         "default": 5,
         "hint": (
