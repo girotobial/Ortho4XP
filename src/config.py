@@ -4,16 +4,15 @@ import tkinter.ttk as ttk
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
 
-from . import O4_DEM_Utils as dem
 from . import O4_OSM_Utils as osm
 from . import O4_UI_Utils as ui
-from . import airport_data, filenames
+from . import airport_data, dem, filenames
 from .common import CoverZLConfig, DecalConfig, ScreenRes
 
 cfg_vars = {
     # App
     "verbosity": {
-        "module": "UI",
+        "module": "ui",
         "type": int,
         "default": 1,
         "values": (0, 1, 2, 3),
@@ -25,7 +24,7 @@ cfg_vars = {
         ),
     },
     "cleaning_level": {
-        "module": "UI",
+        "module": "ui",
         "type": int,
         "default": 1,
         "values": (0, 1, 2, 3),
@@ -38,7 +37,7 @@ cfg_vars = {
         ),
     },
     "overpass_server_choice": {
-        "module": "OSM",
+        "module": "osm",
         "type": str,
         "default": "random",
         "values": ["random"] + sorted(osm.overpass_servers.keys()),
@@ -49,7 +48,7 @@ cfg_vars = {
         ),
     },
     "skip_downloads": {
-        "module": "TILE",
+        "module": "tile",
         "type": bool,
         "default": False,
         "hint": (
@@ -59,7 +58,7 @@ cfg_vars = {
         ),
     },
     "skip_converts": {
-        "module": "TILE",
+        "module": "tile",
         "type": bool,
         "default": False,
         "hint": (
@@ -70,7 +69,7 @@ cfg_vars = {
         ),
     },
     "max_convert_slots": {
-        "module": "TILE",
+        "module": "tile",
         "type": int,
         "default": 4,
         "values": (1, 2, 3, 4, 5, 6, 7, 8),
@@ -80,7 +79,7 @@ cfg_vars = {
         ),
     },
     "check_tms_response": {
-        "module": "IMG",
+        "module": "img",
         "type": bool,
         "default": True,
         "hint": (
@@ -89,13 +88,13 @@ cfg_vars = {
         ),
     },
     "http_timeout": {
-        "module": "IMG",
+        "module": "img",
         "type": float,
         "default": 10,
         "hint": "Delay before we decide that a http request is timed out.",
     },
     "max_connect_retries": {
-        "module": "IMG",
+        "module": "img",
         "type": int,
         "default": 5,
         "hint": (
@@ -104,7 +103,7 @@ cfg_vars = {
         ),
     },
     "max_baddata_retries": {
-        "module": "IMG",
+        "module": "img",
         "type": int,
         "default": 5,
         "hint": (
@@ -114,7 +113,7 @@ cfg_vars = {
         ),
     },
     "ovl_exclude_pol": {
-        "module": "OVL",
+        "module": "ovl",
         "type": list,
         "default": [0],
         "hint": (
@@ -130,7 +129,7 @@ cfg_vars = {
         ),
     },
     "ovl_exclude_net": {
-        "module": "OVL",
+        "module": "ovl",
         "type": list,
         "default": [],
         "hint": (
@@ -152,7 +151,7 @@ cfg_vars = {
         ),
     },
     "custom_overlay_src": {
-        "module": "OVL",
+        "module": "ovl",
         "type": str,
         "default": "",
         "hint": (
