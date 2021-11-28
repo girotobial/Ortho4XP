@@ -8,11 +8,10 @@ from math import cos, pi, sqrt
 import numpy
 import requests
 
-from . import O4_DEM_Utils as dem
 from . import O4_OSM_Utils as osm
 from . import O4_UI_Utils as ui
 from . import O4_Vector_Utils as vect
-from . import __version__, filenames, geo
+from . import __version__, dem, filenames, geo
 
 if "dar" in sys.platform:
     Triangle4XP_cmd = os.path.join(filenames.Utils_dir, "Triangle4XP.app ")

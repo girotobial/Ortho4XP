@@ -6,12 +6,11 @@ import numpy
 from shapely import geometry, ops
 
 # from PIL import Image, ImageDraw, ImageFilter
-from . import O4_DEM_Utils as dem
 from . import O4_OSM_Utils as osm
 from . import O4_UI_Utils as ui
 from . import O4_Vector_Utils as vect
 from . import airport as APT
-from . import filenames, geo
+from . import dem, filenames, geo
 
 good_imagery_list = ()
 
