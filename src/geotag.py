@@ -16,7 +16,7 @@ def gtile_to_wgs84(til_x, til_y, zoomlevel):
 
 
 for f in os.listdir():
-    if not f[-4:] == ".jpg":
+    if f[-4:] != ".jpg":
         continue
     items = f.split("_")
     til_y_top = int(items[0])
