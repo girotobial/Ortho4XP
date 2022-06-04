@@ -6,6 +6,7 @@ from tkinter import RIDGE, E, N, S, W, filedialog
 
 from . import airport_data, dem, filenames, imagery
 from . import osm as osm
+from . import overlay
 from . import tile as tile
 from . import ui as ui
 from .common import CoverZLConfig, DecalConfig, ScreenRes

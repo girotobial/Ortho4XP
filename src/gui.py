@@ -32,8 +32,16 @@ from tkinter import (
 
 from PIL import Image, ImageDraw, ImageTk
 
-from . import O4_Imagery_Utils as imagery
-from . import __version__, airport_data, common, config, dsf, filenames, geo
+from . import (
+    __version__,
+    airport_data,
+    common,
+    config,
+    dsf,
+    filenames,
+    geo,
+    imagery,
+)
 from . import mask as mask
 from . import mesh as mesh
 from . import tile as tiles
