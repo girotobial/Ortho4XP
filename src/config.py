@@ -4,10 +4,10 @@ import tkinter.ttk as ttk
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
 
-from . import O4_OSM_Utils as osm
-from . import O4_Tile_Utils as tile
-from . import O4_UI_Utils as ui
 from . import airport_data, dem, filenames, imagery
+from . import osm as osm
+from . import tile as tile
+from . import ui as ui
 from .common import CoverZLConfig, DecalConfig, ScreenRes
 
 cfg_vars = {
@@ -114,7 +114,7 @@ cfg_vars = {
         ),
     },
     "ovl_exclude_pol": {
-        "module": "ovl",
+        "module": "overlay",
         "type": list,
         "default": [0],
         "hint": (
@@ -130,7 +130,7 @@ cfg_vars = {
         ),
     },
     "ovl_exclude_net": {
-        "module": "ovl",
+        "module": "overlay",
         "type": list,
         "default": [],
         "hint": (
@@ -152,7 +152,7 @@ cfg_vars = {
         ),
     },
     "custom_overlay_src": {
-        "module": "ovl",
+        "module": "overlay",
         "type": str,
         "default": "",
         "hint": (

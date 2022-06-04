@@ -10,7 +10,7 @@ import numpy
 import requests
 from PIL import Image
 
-import src.O4_UI_Utils as UI
+import src.ui as UI
 
 from . import filenames
 

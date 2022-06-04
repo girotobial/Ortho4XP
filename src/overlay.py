@@ -4,8 +4,8 @@ import subprocess
 import sys
 import time
 
-from . import O4_UI_Utils as ui
 from . import filenames
+from . import ui as ui
 
 # the following is meant to be modified directly by users who need it (in the config window, not here!)
 ovl_exclude_pol = [0]

@@ -33,13 +33,13 @@ from tkinter import (
 from PIL import Image, ImageDraw, ImageTk
 
 from . import O4_Imagery_Utils as imagery
-from . import O4_Mask_Utils as mask
-from . import O4_Mesh_Utils as mesh
-from . import O4_Tile_Utils as tiles
-from . import O4_UI_Utils as ui
-from . import O4_Vector_Map as vmap
-from . import O4_Vector_Utils as vect
 from . import __version__, airport_data, common, config, dsf, filenames, geo
+from . import mask as mask
+from . import mesh as mesh
+from . import tile as tiles
+from . import ui as ui
+from . import vector as vect
+from . import vector_map as vmap
 
 # Set OsX=True if you prefer the OsX way of drawing existing tiles but are on Linux or Windows.
 OsX = "dar" in sys.platform

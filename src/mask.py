@@ -7,12 +7,12 @@ from math import atan, ceil, floor
 import numpy
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
-from . import O4_Mesh_Utils as mesh
-from . import O4_OSM_Utils as osm
-from . import O4_UI_Utils as ui
-from . import O4_Vector_Utils as vect
 from . import dem, filenames, geo, imagery
-from .O4_Parallel_Utils import parallel_execute
+from . import mesh as mesh
+from . import osm as osm
+from . import ui as ui
+from . import vector as vect
+from .parallel import parallel_execute
 
 mask_altitude_above = 0.5
 masks_build_slots = 4

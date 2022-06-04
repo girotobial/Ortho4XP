@@ -4,13 +4,13 @@ import shutil
 import threading
 import time
 
-from . import O4_Mask_Utils as mask
-from . import O4_Mesh_Utils as mesh
-from . import O4_Overlay_Utils as overlay
-from . import O4_UI_Utils as ui
-from . import O4_Vector_Map as vmap
 from . import dsf, filenames, imagery
-from .O4_Parallel_Utils import parallel_join, parallel_launch
+from . import mask as mask
+from . import mesh as mesh
+from . import overlay as overlay
+from . import ui as ui
+from . import vector_map as vmap
+from .parallel import parallel_join, parallel_launch
 
 max_convert_slots = 4
 skip_downloads = False

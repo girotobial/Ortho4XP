@@ -1,6 +1,6 @@
 import threading
 
-from . import O4_UI_Utils as ui
+from . import ui as ui
 
 
 class parallel_worker(threading.Thread):

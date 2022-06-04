@@ -4,12 +4,12 @@ import sys
 
 import src.airport_data as airport_data
 import src.filenames as filenames
-import src.O4_GUI_Utils as gui
-import src.O4_Imagery_Utils as image
-import src.O4_Mask_Utils as mask
-import src.O4_Mesh_Utils as mesh
-import src.O4_Tile_Utils as tiles
-import src.O4_Vector_Map as vmap
+import src.gui as gui
+import src.imagery as image
+import src.mask as mask
+import src.mesh as mesh
+import src.tile as tiles
+import src.vector_map as vmap
 from src import (
     config,  # CFG imported last because it can modify other modules variables
 )

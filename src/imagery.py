@@ -13,14 +13,14 @@ import numpy
 import requests
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from . import O4_Mask_Utils as mask
-from . import O4_Mesh_Utils as mesh
-from . import O4_OSM_Utils as osm
-from . import O4_UI_Utils as ui
-from . import O4_Vector_Utils as vect
 from . import filenames
 from . import geo as geo
-from .O4_Parallel_Utils import parallel_execute
+from . import mask as mask
+from . import mesh as mesh
+from . import osm as osm
+from . import ui as ui
+from . import vector as vect
+from .parallel import parallel_execute
 
 try:
     import O4_Custom_URL as URL

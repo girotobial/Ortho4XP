@@ -13,9 +13,9 @@ from math import ceil, floor
 import numpy
 from PIL import Image, ImageDraw
 
-from . import O4_Mask_Utils as mask
-from . import O4_UI_Utils as ui
 from . import airport_data, filenames, geo
+from . import mask as mask
+from . import ui as ui
 
 quad_init_level = 3
 quad_capacity_high = 50000

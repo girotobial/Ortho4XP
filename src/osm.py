@@ -9,7 +9,7 @@ import requests
 from shapely import geometry, ops
 
 import src.filenames as filenames
-import src.O4_UI_Utils as UI
+import src.ui as UI
 
 overpass_servers = {
     "DE": "http://overpass-api.de/api/interpreter",
