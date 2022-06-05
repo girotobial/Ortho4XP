@@ -1,6 +1,5 @@
 import functools
 from math import acos, atan, cos, exp, floor, log, log2, pi, tan
-from typing import Tuple
 
 import numpy as np
 import pyproj
@@ -77,7 +76,7 @@ def ahaversin(__haversin: float) -> float:
 
 
 def greatcircle_distance(
-    start: Tuple[float, float], end: Tuple[float, float]
+    start: tuple[float, float], end: tuple[float, float]
 ) -> float:
     """[summary]
 
