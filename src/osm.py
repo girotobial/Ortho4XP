@@ -9,7 +9,7 @@ import requests
 from shapely import geometry, ops
 
 import src.filenames as filenames
-import src.ui as UI
+import src.ui as ui
 
 overpass_servers = {
     "DE": "http://overpass-api.de/api/interpreter",
@@ -68,7 +68,7 @@ class OSM_layer:
                 else:
                     pfile = open(osm_file_name, "r", encoding="utf-8")
             except:
-                UI.vprint(
+                ui.vprint(
                     1,
                     "    Could not open",
                     osm_file_name,
@@ -131,7 +131,7 @@ class OSM_layer:
                 if items[1] != "way" or role not in ("outer", "inner"):
                     if items[1] == "node":
                         continue  # not necessary to report these
-                    UI.lvprint(
+                    ui.lvprint(
                         2,
                         "Relation id=",
                         osmid,
@@ -198,7 +198,7 @@ class OSM_layer:
                         bad_rel = True
                         break
                 if bad_rel == True:
-                    UI.lvprint(
+                    ui.lvprint(
                         2,
                         "Relation id=",
                         osmid,
@@ -263,13 +263,13 @@ class OSM_layer:
                 normal_exit = True
         pfile.close()
         if not normal_exit:
-            UI.lvprint(
+            ui.lvprint(
                 0,
                 "ERROR: OSM overpass server answer was corrupted (no ending"
                 " </OSM> tag)",
             )
             return 0
-        UI.vprint(
+        ui.vprint(
             2,
             "      A total of "
             + str(len(self.dicosmn) - initnodes)
@@ -288,7 +288,7 @@ class OSM_layer:
             else:
                 fout = open(filename, "w", encoding="utf-8")
         except:
-            UI.vprint(1, "    Could not open", filename, "for writing.")
+            ui.vprint(1, "    Could not open", filename, "for writing.")
             return 0
         fout.write(
             '<?xml version="1.0" encoding="UTF-8"?>\n<osm version="0.6"'
@@ -424,7 +424,7 @@ def OSM_queries_to_OSM_layer(
                         target_tags[osm_type].append(tag)
     cached_data_filename = filenames.osm_cached(lat, lon, cached_suffix)
     if cached_suffix and os.path.isfile(cached_data_filename):
-        UI.vprint(1, "    * Recycling OSM data from", cached_data_filename)
+        ui.vprint(1, "    * Recycling OSM data from", cached_data_filename)
         return osm_layer.update_dicosm(
             cached_data_filename, input_tags, target_tags
         )
@@ -435,26 +435,26 @@ def OSM_queries_to_OSM_layer(
                 lat, lon, query
             )
             if os.path.isfile(old_cached_data_filename):
-                UI.vprint(1, "    * Recycling OSM data for", query)
+                ui.vprint(1, "    * Recycling OSM data for", query)
                 osm_layer.update_dicosm(
                     old_cached_data_filename, input_tags, target_tags
                 )
                 continue
-        UI.vprint(1, "    * Downloading OSM data for", query)
+        ui.vprint(1, "    * Downloading OSM data for", query)
         response = get_overpass_data(
             query, (lat, lon, lat + 1, lon + 1), server_code
         )
-        if UI.red_flag:
+        if ui.red_flag:
             return 0
         if not response:
-            UI.logprint(
+            ui.logprint(
                 "No valid answer for",
                 query,
                 "after",
                 max_osm_tentatives,
                 ", skipping it.",
             )
-            UI.vprint(
+            ui.vprint(
                 1,
                 "      No valid answer after",
                 max_osm_tentatives,
@@ -496,14 +496,14 @@ def OSM_query_to_OSM_layer(
             else:
                 target_tags[osm_type].append(tag)
     if cached_file_name and os.path.isfile(cached_file_name):
-        UI.vprint(1, "    * Recycling OSM data from", cached_file_name)
+        ui.vprint(1, "    * Recycling OSM data from", cached_file_name)
         osm_layer.update_dicosm(cached_file_name, input_tags, target_tags)
     else:
         response = get_overpass_data(query, bbox, server_code)
-        if UI.red_flag:
+        if ui.red_flag:
             return 0
         if not response:
-            UI.lvprint(
+            ui.lvprint(
                 1,
                 "      No valid answer for",
                 query,
@@ -539,16 +539,16 @@ def get_overpass_data(query, bbox, server_code=None):
         else:  # query is a tuple
             overpass_query = "".join([x + str(bbox) + ";" for x in query])
         url = base_url + "?data=(" + overpass_query + ");(._;>>;);out meta;"
-        UI.vprint(3, url)
+        ui.vprint(3, url)
         try:
             r = s.get(url, timeout=60)
-            UI.vprint(3, "OSM response status :", r)
+            ui.vprint(3, "OSM response status :", r)
             if "200" in str(r):
                 if (
                     b"</osm>" not in r.content[-10:]
                     and b"</OSM>" not in r.content[-10:]
                 ):
-                    UI.vprint(
+                    ui.vprint(
                         1,
                         "        OSM server",
                         true_server_code,
@@ -558,7 +558,7 @@ def get_overpass_data(query, bbox, server_code=None):
                         "sec...",
                     )
                 elif len(r.content) <= 1000 and b"error" in r.content:
-                    UI.vprint(
+                    ui.vprint(
                         1,
                         "        OSM server",
                         true_server_code,
@@ -570,7 +570,7 @@ def get_overpass_data(query, bbox, server_code=None):
                 else:
                     break
             else:
-                UI.vprint(
+                ui.vprint(
                     1,
                     "        OSM server",
                     true_server_code,
@@ -579,7 +579,7 @@ def get_overpass_data(query, bbox, server_code=None):
                     "sec...",
                 )
         except:
-            UI.vprint(
+            ui.vprint(
                 1,
                 "        OSM server",
                 true_server_code,
@@ -589,7 +589,7 @@ def get_overpass_data(query, bbox, server_code=None):
             )
         if tentative >= max_osm_tentatives:
             return 0
-        if UI.red_flag:
+        if ui.red_flag:
             return 0
         time.sleep(2 ** tentative)
         tentative += 1
@@ -610,7 +610,7 @@ def OSM_to_MultiLineString(
     filtered_segs = 0
     for wayid in osm_layer.dicosmfirst["w"]:
         if done % step == 0:
-            UI.progress_bar(1, int(100 * done / todo))
+            ui.progress_bar(1, int(100 * done / todo))
         if (
             tags_for_exclusion
             and wayid in osm_layer.dicosmtags["w"]
@@ -644,11 +644,11 @@ def OSM_to_MultiLineString(
         except:
             pass
         done += 1
-    UI.progress_bar(1, 100)
+    ui.progress_bar(1, 100)
     if not filter:
         return geometry.MultiLineString(multiline)
     else:
-        UI.vprint(2, "      Number of filtered segs :", filtered_segs)
+        ui.vprint(2, "      Number of filtered segs :", filtered_segs)
         return (
             geometry.MultiLineString(multiline),
             geometry.MultiLineString(multiline_reject),
@@ -666,9 +666,9 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
     done = 0
     for wayid in osm_layer.dicosmfirst["w"]:
         if done % step == 0:
-            UI.progress_bar(1, int(100 * done / todo))
+            ui.progress_bar(1, int(100 * done / todo))
         if osm_layer.dicosmw[wayid][0] != osm_layer.dicosmw[wayid][-1]:
-            UI.logprint(
+            ui.logprint(
                 "Non closed way starting at",
                 osm_layer.dicosmn[osm_layer.dicosmw[wayid][0]],
                 ", skipped.",
@@ -691,7 +691,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
             if not pol.area:
                 continue
             if not pol.is_valid:
-                UI.logprint(
+                ui.logprint(
                     "Invalid OSM way starting at",
                     osm_layer.dicosmn[osm_layer.dicosmw[wayid][0]],
                     ", skipped.",
@@ -699,7 +699,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
                 done += 1
                 continue
         except Exception as e:
-            UI.vprint(2, e)
+            ui.vprint(2, e)
             done += 1
             continue
         if filter and filter(pol, wayid, osm_layer.dicosmtags["w"]):
@@ -709,7 +709,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
         done += 1
     for relid in osm_layer.dicosmfirst["r"]:
         if done % step == 0:
-            UI.progress_bar(1, int(100 * done / todo))
+            ui.progress_bar(1, int(100 * done / todo))
         try:
             multiout = [
                 geometry.Polygon(
@@ -744,7 +744,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
                 [geom for geom in multiin if geom.is_valid]
             )
         except Exception as e:
-            UI.logprint(e)
+            ui.logprint(e)
             done += 1
             continue
         multipol = multiout.difference(multiin)
@@ -764,7 +764,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
                 done += 1
                 continue
             if not pol.is_valid:
-                UI.logprint(
+                ui.logprint(
                     "Relation",
                     relid,
                     "contains an invalid polygon which was discarded",
@@ -778,7 +778,7 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
             geometry.MultiPolygon(multilist),
             geometry.MultiPolygon(excludelist),
         )
-        UI.vprint(
+        ui.vprint(
             2,
             "    Total number of geometries:",
             len(ret_val[0].geoms),
@@ -786,8 +786,8 @@ def OSM_to_MultiPolygon(osm_layer, lat, lon, filter=None):
         )
     else:
         ret_val = geometry.MultiPolygon(multilist)
-        UI.vprint(2, "    Total number of geometries:", len(ret_val.geoms))
-    UI.progress_bar(1, 100)
+        ui.vprint(2, "    Total number of geometries:", len(ret_val.geoms))
+    ui.progress_bar(1, 100)
     return ret_val
 
 

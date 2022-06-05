@@ -10,7 +10,7 @@ import numpy
 import requests
 from PIL import Image
 
-import src.ui as UI
+import src.ui as ui
 
 from . import filenames
 
@@ -65,13 +65,13 @@ class DEM:
             if not fill_nodata_values_with_nearest_neighbor(
                 self.alt_dem, self.nodata
             ):
-                UI.vprint(
+                ui.vprint(
                     1,
                     "   INFO: Dataset contains too much no_data to be filled.",
                 )
                 self.nodata_to_zero()
 
-        UI.vprint(
+        ui.vprint(
             1,
             "    * Min altitude:",
             self.alt_dem.min(),
@@ -179,7 +179,7 @@ class DEM:
 
     def nodata_to_zero(self):
         if (self.alt_dem == self.nodata).any():
-            UI.vprint(1, "   INFO: Replacing nodata nodes with zero altitude.")
+            ui.vprint(1, "   INFO: Replacing nodata nodes with zero altitude.")
             self.alt_dem[self.alt_dem == self.nodata] = 0
         self.nodata = -32768
         return
@@ -497,7 +497,7 @@ def read_elevation_from_file(
                     fill_nodata_values_with_nearest_neighbor(alt_dem, nodata)
                     alt_dem = upsample(alt_dem)
         except:
-            UI.lvprint(
+            ui.lvprint(
                 1,
                 "    ERROR: in reading elevation from",
                 file_name,
@@ -521,7 +521,7 @@ def read_elevation_from_file(
                     (nxdem, nydem)
                 )[::-1]
         except:
-            UI.lvprint(
+            ui.lvprint(
                 1,
                 "    ERROR: in reading elevation from",
                 file_name,
@@ -545,7 +545,7 @@ def read_elevation_from_file(
             (nxdem, nydem) = (ds.RasterXSize, ds.RasterYSize)
             nodata = rs.GetNoDataValue()
             if nodata is None:
-                UI.vprint(
+                ui.vprint(
                     1,
                     "    WARNING: raster DEM does not advertise its no_data"
                     " value, assuming -32768.",
@@ -559,7 +559,7 @@ def read_elevation_from_file(
             try:
                 epsg = int(ds.GetProjection().split('"')[-2])
             except:
-                UI.vprint(
+                ui.vprint(
                     1,
                     "    WARNING: raster DEM does not advertise its EPSG code,"
                     " assuming 4326.",
@@ -569,7 +569,7 @@ def read_elevation_from_file(
                 4326,
                 4269,
             ):  # let's be blind about 4269 which might be sufficiently close to 4326 for our purposes
-                UI.lvprint(
+                ui.lvprint(
                     1,
                     "    WARNING: unsupported EPSG code ",
                     epsg,
@@ -583,7 +583,7 @@ def read_elevation_from_file(
             x1 = x0 + (nxdem - 1) * geo[1]
             y0 = y1 + (nydem - 1) * geo[5]
         except:
-            UI.lvprint(
+            ui.lvprint(
                 1,
                 "   ERROR: in reading ",
                 file_name,
@@ -599,7 +599,7 @@ def read_elevation_from_file(
             epsg = 4326
             nodata = -32768
     elif not has_gdal:
-        UI.lvprint(
+        ui.lvprint(
             1,
             "   WARNING: unsupported raster (install Gdal):",
             file_name,
@@ -717,11 +717,11 @@ def ensure_elevation(source, lat, lon, verbose=True):
             or os.path.getsize(filenames.viewfinderpanorama(lat, lon))
             >= 25934402
         ):
-            UI.vprint(
+            ui.vprint(
                 2, "   Recycling ", filenames.viewfinderpanorama(lat, lon)
             )
             return 1
-        UI.vprint(
+        ui.vprint(
             1,
             "    Downloading ",
             filenames.viewfinderpanorama(lat, lon),
@@ -739,7 +739,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
                     lat0 = int(fname[1:3])
                     lon0 = int(fname[4:7])
                 except:
-                    UI.vprint(
+                    ui.vprint(
                         2,
                         "      Archive contains the unknown file name",
                         fname,
@@ -759,15 +759,15 @@ def ensure_elevation(source, lat, lon, verbose=True):
                     if not os.path.isdir(os.path.dirname(out_filename)):
                         os.makedirs(os.path.dirname(out_filename))
                     with open(out_filename, "wb") as out:
-                        UI.vprint(2, "      Extracting", out_filename)
+                        ui.vprint(2, "      Extracting", out_filename)
                         out.write(zip_ref.open(f, "r").read())
     elif source in ("SRTM", "ALOS"):
         if os.path.exists(filenames.elevation_data(source, lat, lon)):
-            UI.vprint(
+            ui.vprint(
                 2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
-        UI.vprint(
+        ui.vprint(
             1,
             "    Downloading ",
             filenames.elevation_data(source, lat, lon),
@@ -812,11 +812,11 @@ def ensure_elevation(source, lat, lon, verbose=True):
                 return 0
     elif source == "NED1/3":
         if os.path.exists(filenames.elevation_data(source, lat, lon)):
-            UI.vprint(
+            ui.vprint(
                 2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
-        UI.vprint(
+        ui.vprint(
             1,
             "    Downloading ",
             filenames.elevation_data(source, lat, lon),
@@ -830,7 +830,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
         )
         r = http_request(url_base + usgs_name + ".zip", source, verbose)
         if not r:
-            UI.vprint(2, "    Trying alternative naming scheme.")
+            ui.vprint(2, "    Trying alternative naming scheme.")
             usgs_name = (
                 "imgn" + str(lat + 1) + "w" + str(-lon).zfill(3) + "_13"
             )
@@ -860,11 +860,11 @@ def ensure_elevation(source, lat, lon, verbose=True):
                     return 0
     elif source == "NED1":
         if os.path.exists(filenames.elevation_data(source, lat, lon)):
-            UI.vprint(
+            ui.vprint(
                 2, "   Recycling ", filenames.elevation_data(source, lat, lon)
             )
             return 1
-        UI.vprint(
+        ui.vprint(
             1,
             "    Downloading ",
             filenames.elevation_data(source, lat, lon),
@@ -878,7 +878,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
             verbose,
         )
         if not r:
-            UI.vprint(2, "    Trying alternative naming scheme.")
+            ui.vprint(2, "    Trying alternative naming scheme.")
             r = http_request(url_base + usgs_base + ".zip", source, verbose)
             if not r:
                 return 0
@@ -907,7 +907,7 @@ def ensure_elevation(source, lat, lon, verbose=True):
                     except:
                         return 0
     else:
-        UI.vprint(1, "   ERROR: Unknown elevation source.")
+        ui.vprint(1, "   ERROR: Unknown elevation source.")
         return 0
     return 1
 
@@ -926,23 +926,23 @@ def http_request(url, source, verbose=False):
                 return r
             elif "[40" in status_code or "[30" in status_code:
                 if verbose:
-                    UI.vprint(2, "    Server said 'Not Found'")
+                    ui.vprint(2, "    Server said 'Not Found'")
                 return 0
             elif "[5" in status_code:
                 if verbose:
-                    UI.vprint(
+                    ui.vprint(
                         2, "    Server said 'Internal Error'.", status_code
                     )
             else:
                 if verbose:
-                    UI.vprint(2, status_code)
+                    ui.vprint(2, status_code)
         except Exception as e:
             if verbose:
-                UI.vprint(2, e)
+                ui.vprint(2, e)
         tentative += 1
         if tentative == 6:
             return 0
-        UI.vprint(
+        ui.vprint(
             1,
             "    ",
             source,
@@ -962,13 +962,13 @@ def fill_nodata_values_with_nearest_neighbor(alt_dem, nodata):
         if not step:
             if numpy.sum(alt_dem == nodata) >= 10000:
                 return 0
-            UI.vprint(
+            ui.vprint(
                 2,
                 "    INFO: Elevation file contains voids, trying to fill them"
                 " recursively by nearest neighbour.",
             )
         else:
-            UI.vprint(2, "    ", step)
+            ui.vprint(2, "    ", step)
         alt10 = numpy.roll(alt_dem, 1, axis=0)
         alt10[0] = alt_dem[0]
         alt20 = numpy.roll(alt_dem, -1, axis=0)
@@ -983,7 +983,7 @@ def fill_nodata_values_with_nearest_neighbor(alt_dem, nodata):
         alt_dem[alt_dem == nodata] = atemp[alt_dem == nodata]
         step += 1
         if step > 20:
-            UI.vprint(
+            ui.vprint(
                 1,
                 "    WARNING: The raster contain holes that seem to big to be"
                 " filled... I'm filling the remainder with zero.",
@@ -991,7 +991,7 @@ def fill_nodata_values_with_nearest_neighbor(alt_dem, nodata):
             alt_dem[alt_dem == nodata] = 0
             break
     if step:
-        UI.vprint(2, "    Done.")
+        ui.vprint(2, "    Done.")
     return 1
 
 
