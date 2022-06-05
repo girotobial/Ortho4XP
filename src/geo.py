@@ -220,7 +220,7 @@ def wgs84_to_orthogrid(lat, lon, zoomlevel):
 ##############################################################################
 
 ##############################################################################
-def st_coord(lat, lon, tex_x, tex_y, zoomlevel, provider_code):
+def st_coord(lat, lon, tex_x, tex_y, zoomlevel):
     """
     ST coordinates of a point in a texture
     """
