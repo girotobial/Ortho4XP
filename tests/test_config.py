@@ -1,7 +1,10 @@
 """Tests for the new config framework"""
 
+import pytest
+from hypothesis import given
+from hypothesis.strategies import integers
+
 from src import config
-from src.common import CoverZLConfig, ScreenRes
 
 
 class TestConfigClass:
@@ -69,3 +72,14 @@ class TestConfigClass:
         assert cfg.overlay_lod == 25000
         assert cfg.custom_dem == ""
         assert cfg.fill_nodata
+
+    @given(integers())
+    def test_verbosity_validation_passes(self, value):
+        if value in range(4):
+            config.Config(verbosity=value)
+
+    @given(integers())
+    def test_verbosity_validation_fails(self, value):
+        with pytest.raises(ValueError):
+            if value not in range(4):
+                config.Config(verbosity=value)
