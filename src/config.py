@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
+from dataclasses import dataclass, field
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
 
@@ -777,48 +778,116 @@ list_global_cfg = (
     + list_dsf_vars
 )
 
-############################################################################################
-# Initialization to default values
-for var in cfg_vars:
-    target = (
-        cfg_vars[var]["module"] + "." + var
-        if "module" in cfg_vars[var]
-        else var
-    )
-    exec(target + "=cfg_vars['" + var + "']['default']")
-############################################################################################
-# Update from Global Ortho4XP.cfg
-try:
-    with open(os.path.join(filenames.Ortho4XP_dir, "Ortho4XP.cfg"), "r") as f:
-        for line in f.readlines():
-            line = line.strip()
-            if not line:
-                continue
-            if line[0] == "#":
-                continue
-            try:
-                (var, value) = line.split("=")
-                # compatibility with config files from version <= 1.20
-                if value and value[0] in ('"', "'"):
-                    value = value[1:]
-                if value and value[-1] in ('"', "'"):
-                    value = value[:-1]
-                target = (
-                    cfg_vars[var]["module"] + "." + var
-                    if "module" in cfg_vars[var]
-                    else var
-                )
-                if cfg_vars[var]["type"] in (bool, list):
-                    cmd = target + "=" + value
-                else:
-                    cmd = target + "=cfg_vars['" + var + "']['type'](value)"
-                exec(cmd)
-            except:
-                ui.lvprint(
-                    1, "Global config file contains an invalide line:", line
-                )
-except OSError:
-    print("No global config file found. Reverting to default values.")
+
+@dataclass(slots=True, kw_only=True)
+class Config:
+    verbosity: int = 1
+    cleaning_level: int = 1
+    overpass_server_choice: str = "random"
+    skip_downloads: bool = False
+    skip_converts: bool = False
+    max_convert_slots: int = 4
+    check_tms_response: bool = True
+    http_timeout: float = 10
+    max_connect_retries: int = 5
+    max_baddata_retries: int = 5
+    ovl_exclude_pol: list[int] = field(default_factory=lambda: [0])
+    ovl_exclude_net: list[int] = field(default_factory=list)
+    xplane_install_dir: str = "<X-Plane Top Level directory>"
+    custom_overlay_src: str = ""
+    apt_smoothing_pix: int = 8
+    road_level: int = 1
+    road_banking_limit: float = 0.5
+    lane_width: float = 5
+    max_levelled_segs: int = 100000
+    water_simplification: float = 0
+    min_area: float = 0.001
+    max_area: float = 200
+    clean_bad_geometries: bool = True
+    mesh_zl: int = 19
+    curvature_tol: float = 2
+    apt_curv_tol: float = 0.5
+    apt_curv_ext: float = 0.5
+    coast_curv_tol: float = 1
+    coast_curv_ext: float = 0.5
+    limit_tris: int = 0
+    hmin: float = 0
+    min_angle: float = 10
+    sea_smoothing_mode: str = "zero"
+    water_smoothing: int = 10
+    iterate: int = 0
+    mask_zl: int = 14
+    masks_width: int = 100
+    masking_mode: str = "sand"
+    use_masks_for_inland: bool = False
+    imprint_masks_to_dds: bool = False
+    masks_use_dem_too: bool = False
+    masks_custom_extent: str = ""
+    default_website: str = ""
+    default_zl: int = 16
+    zone_list: list[str] = field(default_factory=list)
+    cover_airports_with_highres: str = "False"
+    cover_extent: float = 1
+    cover_zl: CoverZLConfig = 18
+    cover_screen_res: ScreenRes = "HD_1080p"
+    cover_fov: float = 60.0
+    cover_fpa: float = 10
+    cover_greediness: int = 1
+    cover_greediness_threshold: float = 0.70
+    sea_texture_blur: float = 0
+    add_low_res_sea_ovl: bool = False
+    experimental_water: int = 0
+    ratio_water: float = 0.25
+    normal_map_strength: float = 1
+    terrain_casts_shadows: bool = True
+    overlay_lod: float = 25000
+    use_decal_on_terrain: DecalConfig = True
+    custom_dem: str = ""
+    fill_nodata: bool = True
+
+
+# ############################################################################################
+# # Initialization to default values
+# for var in cfg_vars:
+#     target = (
+#         cfg_vars[var]["module"] + "." + var
+#         if "module" in cfg_vars[var]
+#         else var
+#     )
+#     exec(target + "=cfg_vars['" + var + "']['default']")
+# ############################################################################################
+# # Update from Global Ortho4XP.cfg
+# try:
+#     with open(os.path.join(filenames.Ortho4XP_dir, "Ortho4XP.cfg"), "r") as f:
+#         for line in f.readlines():
+#             line = line.strip()
+#             if not line:
+#                 continue
+#             if line[0] == "#":
+#                 continue
+#             try:
+#                 (var, value) = line.split("=")
+#                 # compatibility with config files from version <= 1.20
+#                 if value and value[0] in ('"', "'"):
+#                     value = value[1:]
+#                 if value and value[-1] in ('"', "'"):
+#                     value = value[:-1]
+#                 target = (
+#                     cfg_vars[var]["module"] + "." + var
+#                     if "module" in cfg_vars[var]
+#                     else var
+#                 )
+#                 if cfg_vars[var]["type"] in (bool, list):
+#                     cmd = target + "=" + value
+#                 else:
+#                     cmd = target + "=cfg_vars['" + var + "']['type'](value)"
+#                 exec(cmd)
+#             except:
+#                 ui.lvprint(
+#                     1, "Global config file contains an invalide line:", line
+#                 )
+# except OSError:
+#     print("No global config file found. Reverting to default values.")
 
 
 ############################################################################################
