@@ -51,6 +51,22 @@ class TestAppConfig:
         with pytest.raises(ValueError):
             config.AppConfig(verbosity=value)
 
+    @given(integers(0, 3))
+    def test_cleaning_level_validation_passes(self, value: int):
+        cfg = config.AppConfig()
+        cfg.cleaning_level = value
+        assert cfg.cleaning_level == value
+        cfg2 = config.AppConfig(cleaning_level=value)
+        assert cfg2.cleaning_level == value
+
+    @given(integers().filter(lambda n: n > 3 or n < 0))
+    def test_cleaning_level_validation_fails(self, value):
+        with pytest.raises(ValueError):
+            cfg = config.AppConfig()
+            cfg.cleaning_level = value
+        with pytest.raises(ValueError):
+            config.AppConfig(cleaning_level=value)
+
 
 class TestConfigClass:
     def test_init_with_defaults(self):
