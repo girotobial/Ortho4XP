@@ -1,9 +1,11 @@
+import enum
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
 from dataclasses import dataclass, field
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
+from typing import Union
 
 from . import airport_data, dem, filenames, imagery
 from . import osm as osm
@@ -779,9 +781,44 @@ list_global_cfg = (
 )
 
 
-@dataclass(slots=True, kw_only=True)
-class Config:
-    verbosity: int = 1
+class Verbosity(enum.IntEnum):
+    """Verbosity level of the application"""
+
+    SILENT = 0
+    NORMAL = 1
+    VERBOSE = 2
+    LOUD = 3
+
+
+class VerbosityValidator:
+    """A descriptor that validates the verbosity level."""
+
+    def __init__(self, default: Verbosity = Verbosity.NORMAL):
+        self.default = default
+        self.private_name = ""
+
+    def __set_name__(self, owner, name: str):
+        del owner
+        self.private_name = f"_{name}"
+
+    def __get__(self, obj, objtype=None) -> Verbosity:
+        del objtype
+        verb = getattr(obj, self.private_name, self.default)
+        assert isinstance(verb, Verbosity)
+        return verb
+
+    def __set__(self, obj, value: Union[Verbosity, int]) -> None:
+        value = self.default if value is self else Verbosity(value)
+        setattr(obj, self.private_name, value)
+
+
+@dataclass
+class AppConfig:
+    """Configuration for the application"""
+
+    verbosity: Union[Verbosity, int, VerbosityValidator] = field(
+        default=VerbosityValidator()
+    )
     cleaning_level: int = 1
     overpass_server_choice: str = "random"
     skip_downloads: bool = False
@@ -805,6 +842,13 @@ class Config:
     max_area: float = 200
     clean_bad_geometries: bool = True
     mesh_zl: int = 19
+
+
+@dataclass
+class Config:
+    """Main configuration for the application"""
+
+    app: AppConfig = AppConfig()
     curvature_tol: float = 2
     apt_curv_tol: float = 0.5
     apt_curv_ext: float = 0.5

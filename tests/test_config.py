@@ -7,9 +7,9 @@ from hypothesis.strategies import integers
 from src import config
 
 
-class TestConfigClass:
+class TestAppConfig:
     def test_init_with_defaults(self):
-        cfg = config.Config()
+        cfg = config.AppConfig()
         assert cfg.verbosity == 1
         assert cfg.cleaning_level == 1
         assert cfg.overpass_server_choice == "random"
@@ -34,6 +34,28 @@ class TestConfigClass:
         assert cfg.max_area == 200
         assert cfg.clean_bad_geometries
         assert cfg.mesh_zl == 19
+
+    @given(integers(0, 3))
+    def test_verbosity_validation_passes(self, value):
+        cfg = config.AppConfig()
+        cfg.verbosity = value
+        assert cfg.verbosity == value
+        cfg2 = config.AppConfig(value)
+        assert cfg2.verbosity == value
+
+    @given(integers().filter(lambda n: n > 3 or n < 0))
+    def test_verbosity_validation_fails(self, value):
+        with pytest.raises(ValueError):
+            cfg = config.AppConfig()
+            cfg.verbosity = value
+        with pytest.raises(ValueError):
+            config.AppConfig(verbosity=value)
+
+
+class TestConfigClass:
+    def test_init_with_defaults(self):
+        cfg = config.Config()
+        assert cfg.app == config.AppConfig()
         assert cfg.curvature_tol == float(2)
         assert cfg.apt_curv_tol == 0.5
         assert cfg.apt_curv_ext == 0.5
@@ -72,14 +94,3 @@ class TestConfigClass:
         assert cfg.overlay_lod == 25000
         assert cfg.custom_dem == ""
         assert cfg.fill_nodata
-
-    @given(integers())
-    def test_verbosity_validation_passes(self, value):
-        if value in range(4):
-            config.Config(verbosity=value)
-
-    @given(integers())
-    def test_verbosity_validation_fails(self, value):
-        with pytest.raises(ValueError):
-            if value not in range(4):
-                config.Config(verbosity=value)
