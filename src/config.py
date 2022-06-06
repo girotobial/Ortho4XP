@@ -6,7 +6,7 @@ import tkinter.ttk as ttk
 from dataclasses import dataclass, field
 from math import ceil
 from tkinter import RIDGE, E, N, S, W, filedialog
-from typing import Any, Generic, TypeVar, Union
+from typing import Any, Callable, Generic, TypeVar, Union
 
 from . import airport_data, dem, filenames, imagery
 from . import osm as osm
@@ -823,37 +823,29 @@ class BaseValidator(abc.ABC, Generic[T]):
         ...
 
 
-class VerbosityValidator(BaseValidator[Verbosity]):
-    """A descriptor that validates the verbosity level."""
+class Validator(BaseValidator[T]):
+    """Generic Validator for any type"""
 
-    def __init__(self, default: Verbosity = Verbosity.NORMAL):
+    def __init__(self, default: T, converter: Callable[..., T]):
+        """A Generic Descriptor, validates data to be the type given by the converter function
+
+        Parameters
+        ----------
+        default : T
+            _description_
+        converter : Callable[..., T]
+            a callable object that converts the data to the type given by the default value
+        """
         super().__init__(default)
+        self.converter = converter
 
-    def __get__(self, obj: Any, objtype=None) -> Verbosity:
+    def __get__(self, obj: Any, objtype=None) -> T:
         del objtype
-        verb = getattr(obj, self.private_name, self.default)
-        assert isinstance(verb, Verbosity)
-        return verb
+        value = getattr(obj, self.private_name, self.default)
+        return self.converter(value)
 
-    def __set__(self, obj: Any, value: Union[Verbosity, int]) -> None:
-        value = self.default if value is self else Verbosity(value)
-        setattr(obj, self.private_name, value)
-
-
-class CleaningLevelValidator(BaseValidator[CleaningLevel]):
-    """A descriptor that validates the cleaning level."""
-
-    def __init__(self, default: CleaningLevel = CleaningLevel.REDO_ANY):
-        super().__init__(default)
-
-    def __get__(self, obj: Any, objtype=None) -> CleaningLevel:
-        del objtype
-        level = getattr(obj, self.private_name, self.default)
-        assert isinstance(level, CleaningLevel)
-        return level
-
-    def __set__(self, obj: Any, value: Union[CleaningLevel, int]) -> None:
-        value = self.default if value is self else CleaningLevel(value)
+    def __set__(self, obj: Any, value: T) -> None:
+        value = self.default if value is self else self.converter(value)
         setattr(obj, self.private_name, value)
 
 
@@ -861,11 +853,15 @@ class CleaningLevelValidator(BaseValidator[CleaningLevel]):
 class AppConfig:
     """Configuration for the application"""
 
-    verbosity: Union[Verbosity, int, VerbosityValidator] = field(
-        default=VerbosityValidator()
+    verbosity: Union[Verbosity, int, Validator[Verbosity]] = field(
+        default=Validator(default=Verbosity.NORMAL, converter=Verbosity)
     )
-    cleaning_level: Union[CleaningLevel, int, CleaningLevelValidator] = field(
-        default=CleaningLevelValidator()
+    cleaning_level: Union[
+        CleaningLevel, int, Validator[CleaningLevel]
+    ] = field(
+        default=Validator(
+            default=CleaningLevel.REDO_ANY, converter=CleaningLevel
+        )
     )
     overpass_server_choice: str = "random"
     skip_downloads: bool = False
