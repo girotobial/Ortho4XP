@@ -27,6 +27,7 @@ pytest = "6.2.5"
 prospector = {extras = ["with_vulture"], version = "1.5.1"}
 types-requests = "2.26.0"
 types-Pillow = "8.3.2"
+hypothesis = "^6.46.11"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
