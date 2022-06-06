@@ -803,6 +803,13 @@ class CleaningLevel(enum.IntEnum):
 T = TypeVar("T")
 
 
+def convert_to_bool(value: Any) -> bool:
+    """Convert a value to a boolean"""
+    if isinstance(value, str):
+        return value.lower() in ("true", "1", "yes", "y")
+    return bool(value)
+
+
 class BaseValidator(abc.ABC, Generic[T]):
     """Base class for validators"""
 
@@ -832,7 +839,7 @@ class Validator(BaseValidator[T]):
         Parameters
         ----------
         default : T
-            _description_
+            default value of the field
         converter : Callable[..., T]
             a callable object that converts the data to the type given by the default value
         """
@@ -846,6 +853,35 @@ class Validator(BaseValidator[T]):
 
     def __set__(self, obj: Any, value: T) -> None:
         value = self.default if value is self else self.converter(value)
+        setattr(obj, self.private_name, value)
+
+
+class BooleanValidator(BaseValidator[bool]):
+    """Validator for boolean values"""
+
+    def __init__(self, default: bool):
+        """A Boolean Descriptor, validates data to be a boolean
+
+        Parameters
+        ----------
+        default : bool
+            The default value to set to the field
+        """
+        super().__init__(default)
+
+    def __get__(self, obj: Any, objtype=None) -> bool:
+        del objtype
+        value = getattr(obj, self.private_name, self.default)
+        assert isinstance(value, bool)
+        return value
+
+    def __set__(self, obj: Any, value: Any) -> None:
+        if value is self:
+            value = self.default
+        if not isinstance(value, (bool, int, float)):
+            raise ValueError(f"Invalid value for boolean: {value}")
+
+        value = bool(value)
         setattr(obj, self.private_name, value)
 
 
@@ -864,10 +900,16 @@ class AppConfig:
         )
     )
     overpass_server_choice: str = "random"
-    skip_downloads: bool = False
-    skip_converts: bool = False
+    skip_downloads: Union[bool, BooleanValidator] = field(
+        default=BooleanValidator(default=False)
+    )
+    skip_converts: Union[bool, BooleanValidator] = field(
+        default=BooleanValidator(default=False)
+    )
     max_convert_slots: int = 4
-    check_tms_response: bool = True
+    check_tms_response: Union[bool, BooleanValidator] = field(
+        default=BooleanValidator(True)
+    )
     http_timeout: float = 10
     max_connect_retries: int = 5
     max_baddata_retries: int = 5
@@ -883,7 +925,9 @@ class AppConfig:
     water_simplification: float = 0
     min_area: float = 0.001
     max_area: float = 200
-    clean_bad_geometries: bool = True
+    clean_bad_geometries: Union[bool, BooleanValidator] = field(
+        default=BooleanValidator(True)
+    )
     mesh_zl: int = 19
 
 

@@ -2,7 +2,7 @@
 
 import pytest
 from hypothesis import given
-from hypothesis.strategies import integers
+from hypothesis.strategies import booleans, complex_numbers, integers, text
 
 from src import config
 
@@ -66,6 +66,45 @@ class TestAppConfig:
             cfg.cleaning_level = value
         with pytest.raises(ValueError):
             config.AppConfig(cleaning_level=value)
+
+    @given(booleans())
+    def test_booleans_validation_passes(self, value):
+        cfg = config.AppConfig(
+            skip_downloads=value,
+            skip_converts=value,
+            check_tms_response=value,
+            clean_bad_geometries=value,
+        )
+        assert cfg.skip_converts == value
+        assert cfg.skip_downloads == value
+        assert cfg.check_tms_response == value
+        assert cfg.clean_bad_geometries == value
+
+        cfg2 = config.AppConfig()
+        cfg2.skip_converts = value
+        cfg2.skip_downloads = value
+        cfg2.check_tms_response = value
+        cfg2.clean_bad_geometries = value
+        assert cfg2.skip_converts == value
+        assert cfg2.skip_downloads == value
+        assert cfg2.check_tms_response == value
+        assert cfg2.clean_bad_geometries == value
+
+    @given(text())
+    def test_booleans_validation_fails(self, value):
+        with pytest.raises(ValueError):
+            config.AppConfig(
+                skip_downloads=value,
+                skip_converts=value,
+                check_tms_response=value,
+                clean_bad_geometries=value,
+            )
+        with pytest.raises(ValueError):
+            cfg = config.AppConfig()
+            cfg.skip_converts = value
+            cfg.skip_downloads = value
+            cfg.check_tms_response = value
+            cfg.clean_bad_geometries = value
 
 
 class TestConfigClass:
