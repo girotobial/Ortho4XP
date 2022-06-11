@@ -1,0 +1,13 @@
+strictness: medium
+test-warnings: true
+max-line-length: 88
+inherits:
+  - default
+
+mypy:
+  run: true
+  options:
+    ignore-missing-imports: true
+
+vulture:
+  run: true

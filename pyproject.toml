@@ -2,7 +2,7 @@
 name = "Ortho4XP"
 version = "1.30"
 description = "A scenery generator for the X-Plane flight simulator"
-authors = ["oscarpilote"]
+authors = ["oscarpilote", "artesim", "girotobial"]
 license = "GPL3"
 packages = [
     { include = "src"}
