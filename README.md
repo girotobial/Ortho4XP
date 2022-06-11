@@ -21,9 +21,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/chriskilding"><img src="https://avatars.githubusercontent.com/u/590569?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chris Kilding</b></sub></a><br /><a href="#infra-chriskilding" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/Ortho4XP/Ortho4XP/commits?author=chriskilding" title="Code">💻</a></td>
   </tr>
 </table>
-deas
 <!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->deas
+<!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
