@@ -24,10 +24,10 @@ jobs:
         uses: lyricwulf/abc@v1
         with:
           macos: gdal
-          linux: libgdal30 libgdal-dev
+          linux: libgdal-dev
       - name: Install dependencies
         run: poetry install
       - name: Install GDAL Python wrapper
         if: matrix.gdal
-        run: poetry add gdal==3.4.1 # Python lib versions MUST be the same as the corresponding system lib versions
+        run: poetry add gdal==3.0.4 # Python lib versions MUST be the same as the corresponding system lib versions
 # TODO run tests
