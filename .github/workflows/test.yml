@@ -18,16 +18,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          cache: poetry
           python-version: "3.9"
       - name: Install GDAL
         uses: lyricwulf/abc@v1
+        if: matrix.gdal
         with:
           macos: gdal
-          linux: libgdal-dev
+          linux: gdal-bin libgdal-dev
       - name: Install dependencies
         run: poetry install
       - name: Install GDAL Python wrapper
         if: matrix.gdal
-        run: poetry add gdal==3.0.4 # Python lib versions MUST be the same as the corresponding system lib versions
+        run: poetry run pip install gdal==3.0.4 # Python lib versions MUST be the same as the corresponding system lib versions
 # TODO run tests
