@@ -7,27 +7,16 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        gdal: ['true', '']
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Poetry
-      run: pipx install poetry
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        cache: poetry
-        python-version: "3.9"
-    - name: Install GDAL
-      uses: lyricwulf/abc@v1
-      with:
-        macos: gdal
-        linux: libgdal30 libgdal-dev
-    - name: Install dependencies
-      run: poetry install
-    - name: Install GDAL Python wrapper
-      if: matrix.gdal
-      run: poetry add gdal==3.4.1   # Python lib versions MUST be the same as the corresponding system lib versions
+      - uses: actions/checkout@v3
+      - name: Setup Poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          cache: poetry
+          python-version: "3.9"
+      - name: Install dependencies
+        run: poetry install
 # TODO run tests
