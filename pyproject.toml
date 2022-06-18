@@ -4,6 +4,9 @@ version = "1.30"
 description = "A scenery generator for the X-Plane flight simulator"
 authors = ["oscarpilote", "artesim", "girotobial"]
 license = "GPL3"
+packages = [
+    { include = "src"}
+]
 
 [tool.poetry.dependencies]
 python = "~3.9"
@@ -16,10 +19,13 @@ pyproj = "3.2.0"
 
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
-prospector = {extras = ["with_mypy", "with_vulture"], version = "^1.5.1"}
-black = "^21.10b0"
+black = "21.9b0"
+isort = "5.9.3"
+mypy = "0.910"
+pytest = "6.2.5"
+prospector = {extras = ["with_vulture"], version = "1.5.1"}
+types-requests = "2.25.11"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -29,3 +35,23 @@ build-backend = "poetry.core.masonry.api"
 testpaths = ["tests"]
 minversion="6.0"
 addopts = "--cov --cov-branch -ra"
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "Ortho4XP.py", "Providers"]
+multi_line_output="3"
+include_trailing_comma = true
+use_parentheses = true
+force_grid_wrap = 0
+line_length = "79"
+
+[tool.black]
+line-length = "79"
+
+[tool.mypy]
+files=["src", "Ortho4XP.py", "Providers"]
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true

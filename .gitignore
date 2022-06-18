@@ -39,7 +39,7 @@ virtualenv/
 **/*.orig
 **/Thumbs.db
 tmp/
-=======
+
 # C extensions
 *.so
 
@@ -166,3 +166,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+=======
+.vscode/

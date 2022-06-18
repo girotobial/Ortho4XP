@@ -1,7 +1,11 @@
 # Ortho4XP
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 A scenery generator for the X-Plane flight simulator
 
 ## Contributors ✨
@@ -27,3 +31,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+## License
+
+Distributed under the GPL3 License. See `Licence/copyright.txt` and `Licence/gpl.txt` for more information.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
