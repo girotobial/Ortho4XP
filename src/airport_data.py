@@ -367,7 +367,7 @@ class GTile:
     def __repr__(self):
         return "<GTile ({}, {})@ZL{}>".format(self.x, self.y, self.zl)
 
-    @functools.lru_cache(maxsize=2 ** 14)
+    @functools.lru_cache(maxsize=2**14)
     def lower_zl_tile(self, target_zl=None):
         if target_zl and target_zl >= self.zl:
             return self
@@ -383,7 +383,7 @@ class GTile:
         else:
             return lower
 
-    @functools.lru_cache(maxsize=2 ** 13)
+    @functools.lru_cache(maxsize=2**13)
     def higher_zl_subtiles(self, target_zl=None):
         if target_zl and target_zl <= self.zl:
             return [self]
@@ -393,14 +393,14 @@ class GTile:
         return [
             GTile(x, y, zl)
             for x in range(
-                self.x * 2 ** zl_diff, (self.x + 16) * 2 ** zl_diff, 16
+                self.x * 2**zl_diff, (self.x + 16) * 2**zl_diff, 16
             )
             for y in range(
-                self.y * 2 ** zl_diff, (self.y + 16) * 2 ** zl_diff, 16
+                self.y * 2**zl_diff, (self.y + 16) * 2**zl_diff, 16
             )
         ]
 
-    @functools.lru_cache(maxsize=2 ** 13)
+    @functools.lru_cache(maxsize=2**13)
     def zl_siblings(self):
         return self.lower_zl_tile().higher_zl_subtiles()
 
@@ -414,7 +414,7 @@ class GTile:
         ]
 
     @staticmethod
-    @functools.lru_cache(maxsize=2 ** 15)
+    @functools.lru_cache(maxsize=2**15)
     def _cached_polygon(x, y, zl):
         lat_max, lon_min = geo.gtile_to_wgs84(x, y, zl)
         lat_min, lon_max = geo.gtile_to_wgs84(x + 16, y + 16, zl)
@@ -855,7 +855,7 @@ class AirportCollection:
     # Airport Interface
     #
 
-    @functools.lru_cache(maxsize=2 ** 3)
+    @functools.lru_cache(maxsize=2**3)
     def gtiles(
         self,
         zl,

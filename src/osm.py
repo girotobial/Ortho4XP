@@ -554,7 +554,7 @@ def get_overpass_data(query, bbox, server_code=None):
                         true_server_code,
                         "sent a corrupted answer (no closing </osm> tag in"
                         " answer), new tentative in",
-                        2 ** tentative,
+                        2**tentative,
                         "sec...",
                     )
                 elif len(r.content) <= 1000 and b"error" in r.content:
@@ -564,7 +564,7 @@ def get_overpass_data(query, bbox, server_code=None):
                         true_server_code,
                         "sent us an error code for the data (data too big ?),"
                         " new tentative in",
-                        2 ** tentative,
+                        2**tentative,
                         "sec...",
                     )
                 else:
@@ -575,7 +575,7 @@ def get_overpass_data(query, bbox, server_code=None):
                     "        OSM server",
                     true_server_code,
                     "rejected our query, new tentative in",
-                    2 ** tentative,
+                    2**tentative,
                     "sec...",
                 )
         except:
@@ -584,14 +584,14 @@ def get_overpass_data(query, bbox, server_code=None):
                 "        OSM server",
                 true_server_code,
                 "was too busy, new tentative in",
-                2 ** tentative,
+                2**tentative,
                 "sec...",
             )
         if tentative >= max_osm_tentatives:
             return 0
         if ui.red_flag:
             return 0
-        time.sleep(2 ** tentative)
+        time.sleep(2**tentative)
         tentative += 1
     return r.content
 

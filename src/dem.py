@@ -200,7 +200,7 @@ class DEM:
         dy[0, :] = (self.alt_dem[0, :] - self.alt_dem[1, :]) / (pixy)
         dy[-1, :] = (self.alt_dem[-2, :] - self.alt_dem[-1, :]) / (pixy)
         del self.alt_dem
-        norm = numpy.sqrt(1 + dx ** 2 + dy ** 2)
+        norm = numpy.sqrt(1 + dx**2 + dy**2)
         dx = dx / norm
         dy = dy / norm
         del norm
@@ -947,10 +947,10 @@ def http_request(url, source, verbose=False):
             "    ",
             source,
             "server may be down or busy, new tentative in",
-            2 ** tentative,
+            2**tentative,
             "sec...",
         )
-        time.sleep(2 ** tentative)
+        time.sleep(2**tentative)
 
 
 ##############################################################################

@@ -1479,8 +1479,7 @@ class Ortho4XP_Config(tk.Toplevel):
         if errors:
             error_text = (
                 "The following variables had wrong type\nand were reset to"
-                " their default value!\n\n* "
-                + "\n* ".join(errors)
+                " their default value!\n\n* " + "\n* ".join(errors)
             )
             self.popup("ERROR", error_text)
 

@@ -115,7 +115,7 @@ def build_poly_file(tile):
     ygrid.add(1)
     xgrid = list(sorted(xgrid))
     ygrid = list(sorted(ygrid))
-    eps = 2 ** -5
+    eps = 2**-5
     ortho_network = geometry.MultiLineString(
         [geometry.LineString([(x, 0.0 - eps), (x, 1.0 + eps)]) for x in xgrid]
         + [
@@ -643,7 +643,7 @@ def include_patches(vector_map, tile):
         ) / 2
 
     def spline_profile(x):
-        return 3 * x ** 2 - 2 * x ** 3
+        return 3 * x**2 - 2 * x**3
 
     def plane_profile(x):
         return x

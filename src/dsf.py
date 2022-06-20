@@ -48,8 +48,8 @@ class QuadTree(dict):
         if level == 0:
             self[("", "")] = self.Bucket()
         else:
-            for i in range(2 ** level):
-                for j in range(2 ** level):
+            for i in range(2**level):
+                for j in range(2**level):
                     key = (
                         numpy.binary_repr(i).zfill(level),
                         numpy.binary_repr(j).zfill(level),

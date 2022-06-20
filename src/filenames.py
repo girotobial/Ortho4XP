@@ -358,7 +358,7 @@ def jpeg_file_name_from_attributes(
             + "_"
             + str(til_x_left)
             + "_"
-            + str(2 ** zoomlevel - 16 - til_y_top)
+            + str(2**zoomlevel - 16 - til_y_top)
             + g2xpl_16_suffix
             + ".jpg"
         )
@@ -421,7 +421,7 @@ def dds_file_name_from_attributes(
             + "_"
             + str(til_x_left)
             + "_"
-            + str(2 ** zoomlevel - 16 - til_y_top)
+            + str(2**zoomlevel - 16 - til_y_top)
             + g2xpl_16_suffix
             + "."
             + file_ext

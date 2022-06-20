@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -6,17 +6,66 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    name: Test
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
-          cache: poetry
-          python-version: "3.9"
-      - name: Install dependencies
-        run: poetry install
-# TODO run tests
+          python-version: "3.10"
+      - uses: snok/install-poetry@v1
+      - name: Install GEOS
+        uses: lyricwulf/abc@v1
+        with:
+          macos: geos
+          linux: libgeos-dev
+      - name: Install PROJ
+        uses: lyricwulf/abc@v1
+        with:
+          macos: proj
+          linux: proj-bin libproj-dev
+      - run: poetry install
+      - run: poetry run pytest
+  black:
+    name: Black
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: snok/install-poetry@v1
+      - name: Install GEOS
+        uses: lyricwulf/abc@v1
+        with:
+          macos: geos
+          linux: libgeos-dev
+      - name: Install PROJ
+        uses: lyricwulf/abc@v1
+        with:
+          macos: proj
+          linux: proj-bin libproj-dev
+      - run: poetry install
+      - run: poetry run black --check src
+  mypy:
+    name: MyPy
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: snok/install-poetry@v1
+      - name: Install GEOS
+        uses: lyricwulf/abc@v1
+        with:
+          macos: geos
+          linux: libgeos-dev
+      - name: Install PROJ
+        uses: lyricwulf/abc@v1
+        with:
+          macos: proj
+          linux: proj-bin libproj-dev
+      - run: poetry install
+      - run: poetry run mypy

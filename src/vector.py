@@ -1088,7 +1088,7 @@ def refine_way(way, max_length):  # max_length assumed in meter
         ins = int(
             sqrt(
                 numpy.sum(
-                    (way[i] - way[i + 1]) ** 2 * numpy.array([[scalx ** 2, 1]])
+                    (way[i] - way[i + 1]) ** 2 * numpy.array([[scalx**2, 1]])
                 )
             )
             * geo.METERS_PER_DEGREE_LATITUDE
@@ -1114,8 +1114,8 @@ def refine_way(way, max_length):  # max_length assumed in meter
 ##############################################################################
 def projcoords(way, A, B):
     return numpy.sum(
-        (way - A) * (B - A) * numpy.array([scalx ** 2, 1]), axis=1
-    ) / numpy.sum((B - A) * (B - A) * numpy.array([scalx ** 2, 1]))
+        (way - A) * (B - A) * numpy.array([scalx**2, 1]), axis=1
+    ) / numpy.sum((B - A) * (B - A) * numpy.array([scalx**2, 1]))
 
 
 ##############################################################################
@@ -1144,7 +1144,7 @@ def point_to_segment_distance(way, A, B):
                     )
                 )
                 ** 2
-                * numpy.array([scalx ** 2, 1]),
+                * numpy.array([scalx**2, 1]),
                 axis=1,
             )
         )

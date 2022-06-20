@@ -579,7 +579,7 @@ def initialize_providers_dict() -> None:
                             ]
                             provider["resolutions"] = numpy.array(
                                 [
-                                    20037508.34 / (128 * 2 ** i)
+                                    20037508.34 / (128 * 2**i)
                                     for i in range(21)
                                 ]
                             )
@@ -861,7 +861,7 @@ def initialize_local_combined_providers_dict(tile):
                             )
                             kernel = numpy.array(range(1, 2 * mask_width))
                             kernel[mask_width:] = range(mask_width - 1, 0, -1)
-                            kernel = kernel / mask_width ** 2
+                            kernel = kernel / mask_width**2
                             for i in range(0, len(img_array)):
                                 img_array[i] = numpy.convolve(
                                     img_array[i], kernel, "same"
@@ -1257,7 +1257,7 @@ def get_wmts_image(tilematrix, til_x, til_y, provider, http_session):
             url = url.replace("{x}", str(til_x))
             url = url.replace("{y}", str(til_y))
             url = url.replace("{|y|}", str(abs(til_y) - 1))
-            url = url.replace("{-y}", str(2 ** tilematrix - 1 - til_y))
+            url = url.replace("{-y}", str(2**tilematrix - 1 - til_y))
             url = url.replace(
                 "{quadkey}", geo.gtile_to_quadkey(til_x, til_y, tilematrix)
             )
@@ -1348,17 +1348,17 @@ def get_wmts_image(tilematrix, til_x, til_y, provider, http_session):
             return (success, data)
         elif success and down_sample:
             x0 = (
-                (til_x_orig - 2 ** down_sample * til_x)
+                (til_x_orig - 2**down_sample * til_x)
                 * width
-                // (2 ** down_sample)
+                // (2**down_sample)
             )
             y0 = (
-                (til_y_orig - 2 ** down_sample * til_y)
+                (til_y_orig - 2**down_sample * til_y)
                 * height
-                // (2 ** down_sample)
+                // (2**down_sample)
             )
-            x1 = x0 + width // (2 ** down_sample)
-            y1 = y0 + height // (2 ** down_sample)
+            x1 = x0 + width // (2**down_sample)
+            y1 = y0 + height // (2**down_sample)
             return (
                 success,
                 data.crop((x0, y0, x1, y1)).resize(
@@ -1541,8 +1541,8 @@ def build_texture_from_bbox_and_size(t_bbox, t_epsg, t_size, provider):
             - 1
         )
         if downscale >= 1:
-            width /= 2 ** downscale
-            height /= 2 ** downscale
+            width /= 2**downscale
+            height /= 2**downscale
             subt_size = (width, height)
         else:
             subt_size = None

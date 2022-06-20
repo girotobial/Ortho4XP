@@ -58,11 +58,11 @@ def build_masks(tile, for_imagery=False):
     ##########################################
     def transition_profile(ratio, ttype):
         if ttype == "spline":
-            return 3 * ratio ** 2 - 2 * ratio ** 3
+            return 3 * ratio**2 - 2 * ratio**3
         elif ttype == "linear":
             return ratio
         elif ttype == "parabolic":
-            return 2 * ratio - ratio ** 2
+            return 2 * ratio - ratio**2
 
     ##########################################
     ui.red_flag = False
@@ -512,7 +512,7 @@ def build_masks(tile, for_imagery=False):
             b_img_array = numpy.array(img_array)
             kernel = numpy.array(range(1, 2 * blur_width))
             kernel[blur_width:] = range(blur_width - 1, 0, -1)
-            kernel = kernel / blur_width ** 2
+            kernel = kernel / blur_width**2
             for i in range(0, len(b_img_array)):
                 b_img_array[i] = numpy.convolve(b_img_array[i], kernel, "same")
             b_img_array = b_img_array.transpose()
@@ -906,7 +906,7 @@ if __name__ == "__main__":
         kernel = numpy.ones(int(mask_width)) / int(mask_width)
         kernel = numpy.array(range(1, 2 * mask_width))
         kernel[mask_width:] = range(mask_width - 1, 0, -1)
-        kernel = kernel / mask_width ** 2
+        kernel = kernel / mask_width**2
         for i in range(0, len(img_array)):
             img_array[i] = numpy.convolve(img_array[i], kernel, "same")
         img_array = img_array.transpose()

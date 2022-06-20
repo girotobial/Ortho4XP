@@ -1499,7 +1499,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
                     greediness=config.cover_greediness,
                     greediness_threshold=config.cover_greediness_threshold,
                 )
-                / 2 ** 30
+                / 2**30
             )
 
         self.gb.set("{:0.1f}".format(total_size) + " GiB")
@@ -1620,7 +1620,7 @@ class Ortho4XP_Custom_ZL(tk.Toplevel):
 class Ortho4XP_Earth_Preview(tk.Toplevel):
 
     earthzl = 6
-    resolution = 2 ** earthzl * 256
+    resolution = 2**earthzl * 256
 
     list_del_ckbtn = [
         "OSM data",
@@ -1774,8 +1774,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             scrollregion=(
                 1,
                 1,
-                2 ** self.earthzl * 256 - 1,
-                2 ** self.earthzl * 256 - 1,
+                2**self.earthzl * 256 - 1,
+                2**self.earthzl * 256 - 1,
             )
         )  # self.canvas.bbox(ALL))
         (x0, y0) = geo.wgs84_to_pix(lat + 0.5, lon + 0.5, self.earthzl)
@@ -2324,8 +2324,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.imageNW = Image.open(filepreviewNW)
             self.photoNW = ImageTk.PhotoImage(self.imageNW)
             self.canv_imgNW = self.canvas.create_image(
-                nx0 * 2 ** self.earthzl * 256 / 8,
-                ny0 * 2 ** self.earthzl * 256 / 8,
+                nx0 * 2**self.earthzl * 256 / 8,
+                ny0 * 2**self.earthzl * 256 / 8,
                 anchor=NW,
                 image=self.photoNW,
             )
@@ -2343,8 +2343,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.imageNE = Image.open(filepreviewNE)
             self.photoNE = ImageTk.PhotoImage(self.imageNE)
             self.canv_imgNE = self.canvas.create_image(
-                (nx0 + 1) * 2 ** self.earthzl * 256 / 8,
-                ny0 * 2 ** self.earthzl * 256 / 8,
+                (nx0 + 1) * 2**self.earthzl * 256 / 8,
+                ny0 * 2**self.earthzl * 256 / 8,
                 anchor=NW,
                 image=self.photoNE,
             )
@@ -2354,8 +2354,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.imageSW = Image.open(filepreviewSW)
             self.photoSW = ImageTk.PhotoImage(self.imageSW)
             self.canv_imgSW = self.canvas.create_image(
-                nx0 * 2 ** self.earthzl * 256 / 8,
-                (ny0 + 1) * 2 ** self.earthzl * 256 / 8,
+                nx0 * 2**self.earthzl * 256 / 8,
+                (ny0 + 1) * 2**self.earthzl * 256 / 8,
                 anchor=NW,
                 image=self.photoSW,
             )
@@ -2370,8 +2370,8 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
             self.imageSE = Image.open(filepreviewSE)
             self.photoSE = ImageTk.PhotoImage(self.imageSE)
             self.canv_imgSE = self.canvas.create_image(
-                (nx0 + 1) * 2 ** self.earthzl * 256 / 8,
-                (ny0 + 1) * 2 ** self.earthzl * 256 / 8,
+                (nx0 + 1) * 2**self.earthzl * 256 / 8,
+                (ny0 + 1) * 2**self.earthzl * 256 / 8,
                 anchor=NW,
                 image=self.photoSE,
             )
