@@ -779,9 +779,10 @@ list_global_cfg = (
 
 ############################################################################################
 # Initialization to default values
+# FIXME
 for var in cfg_vars:
     target = (
-        cfg_vars[var]["module"] + "." + var
+        cfg_vars[var]["module"] + "." + var  # type: ignore
         if "module" in cfg_vars[var]
         else var
     )

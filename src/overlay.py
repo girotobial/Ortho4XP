@@ -9,7 +9,7 @@ from . import ui as ui
 
 # the following is meant to be modified directly by users who need it (in the config window, not here!)
 ovl_exclude_pol = [0]
-ovl_exclude_net = []
+ovl_exclude_net: list[str] = []
 
 # the following is meant to be modified by the CFG module at run time
 custom_overlay_src = ""

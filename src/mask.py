@@ -774,6 +774,7 @@ if __name__ == "__main__":
     if nargs == 5 and not os.path.exists(cached_file_name):
         print(Syntax)
         sys.exit(1)
+    query: str | None = None
     if nargs in (6, 7, 8):
         query_tmp = sys.argv[5]
         query = ""
@@ -786,8 +787,6 @@ if __name__ == "__main__":
                 query += '"' + char + '"'
             else:
                 query += char
-    else:
-        query = None
     if nargs in (7, 8):
         epsg_code = sys.argv[6]
     else:
@@ -918,14 +917,14 @@ if __name__ == "__main__":
         img_array = numpy.array(img_array, dtype=numpy.uint8)
         mask_im = Image.fromarray(img_array)
     mask_im.save(name + ".png")
-    for f in [
+    for file_name in [
         name + ".poly",
         name + ".node",
         name + ".1.node",
         name + ".1.ele",
     ]:
         try:
-            os.remove(f)
+            os.remove(file_name)
         except:
             pass
     print("Done!")

@@ -624,8 +624,8 @@ class Ortho4XP_GUI(tk.Tk):
 
 ##############################################################################
 class Ortho4XP_Custom_ZL(tk.Toplevel):
-    points = []
-    coords = []
+    points: list[int] = []
+    coords: list[float] = []
     polygon_list = []
     polyobj_list = []
 
