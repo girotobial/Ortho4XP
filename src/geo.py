@@ -111,7 +111,9 @@ def greatcircle_distance(
     return EARTH_RADIUS * ahaversin(angle)
 
 
-epsg = {key: pyproj.CRS(f"epsg:{key}") for key in ("4326", "3857")}
+epsg: dict[str, pyproj.CRS | pyproj.Proj] = {
+    key: pyproj.CRS(f"epsg:{key}") for key in ("4326", "3857")
+}
 
 
 ##############################################################################
