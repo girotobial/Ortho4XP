@@ -87,7 +87,7 @@ providers_dict = {}
 combined_providers_dict = {}
 local_combined_providers_dict = {}
 extents_dict = {"global": {"dir": None, "code": "global"}}
-color_filters_dict = {"none": []}
+color_filters_dict: dict[str, typing.Any] = {"none": []}
 
 
 def initialize_extents_dict():
@@ -225,7 +225,7 @@ def initialize_providers_dict() -> None:
             continue
         for file_name in dir_name.glob("*.lay"):
             provider_code = file_name.stem
-            provider = {}
+            provider: dict[str, typing.Any] = {}
             with open(file_name, "r") as f:
                 valid_provider = True
                 for line in f.readlines():
