@@ -110,7 +110,8 @@ def get_DOP40_cookie():
     while DOP40_cookie == "loading":
         print("    Waiting for DOP40 cookie to be updated.")
         time.sleep(3)
-    if (not DOP40_cookie) or (time.time() - DOP40_time) >= 3600:
+    if (not DOP40_cookie) or (time.time() - DOP40_time) >= 3600:  # type ignore
+        # FIXME abuses globals
         DOP40_cookie = "loading"
         DOP40_cookie = (
             requests.Session()
