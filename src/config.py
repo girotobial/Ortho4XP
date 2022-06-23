@@ -805,7 +805,7 @@ try:
                 if value and value[-1] in ('"', "'"):
                     value = value[:-1]
                 target = (
-                    cfg_vars[var]["module"] + "." + var
+                    cfg_vars[var]["module"] + "." + var  # type: ignore
                     if "module" in cfg_vars[var]
                     else var
                 )

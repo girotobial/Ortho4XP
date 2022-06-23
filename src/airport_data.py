@@ -7,6 +7,7 @@ import json
 import math
 import os
 import re
+from typing import Any
 
 import numpy
 import pyproj
@@ -311,7 +312,7 @@ class GTile:
     # We won't dynamically add any attribute : optimize RAM usage
     __slots__ = ["x", "y", "zl", "_hash"]
 
-    __INSTANCES_CACHE__ = {}
+    __INSTANCES_CACHE__: dict[tuple[float, float, float], Any] = {}
     __INSTANCES_CACHE_HITS__ = 0
     __INSTANCES_CACHE_MISSES__ = 0
 
